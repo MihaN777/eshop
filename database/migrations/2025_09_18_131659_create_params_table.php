@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('params', function (Blueprint $table) {
-            $table->id();
+            $table->id()->from(101);
+            $table->string('title');
+            $table->unsignedSmallInteger('filter_type');
             $table->timestamps();
         });
     }

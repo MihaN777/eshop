@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('baskets', function (Blueprint $table) {
-            $table->id();
+            $table->id()->from(101);
+            $table->unsignedInteger('qty');
+            $table->unsignedSmallInteger('status')->default(1);
+            $table->foreignId('product_id')->index()->constrained('products');
+            $table->foreignId('user_id')->index()->constrained('users');
+            $table->foreignId('order_id')->index()->nullable()->constrained('orders');
             $table->timestamps();
         });
     }

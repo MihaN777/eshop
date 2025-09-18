@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('images', function (Blueprint $table) {
-            $table->id();
+            $table->id()->from(101);
+            $table->string('path');
+            $table->foreignId('product_id')->index()->constrained('products');
             $table->timestamps();
         });
     }

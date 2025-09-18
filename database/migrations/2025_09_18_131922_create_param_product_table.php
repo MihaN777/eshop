@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('param_product', function (Blueprint $table) {
-            $table->id();
+            $table->id()->from(101);
+            $table->string('value');
+            $table->foreignId('product_id')->index()->constrained('products');
+            $table->foreignId('param_id')->index()->constrained('params');
             $table->timestamps();
         });
     }
