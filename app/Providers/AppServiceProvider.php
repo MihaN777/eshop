@@ -5,12 +5,13 @@ namespace App\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
+
+//use Illuminate\Contracts\Http\Kernel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,9 +35,21 @@ class AppServiceProvider extends ServiceProvider
         Model::preventSilentlyDiscardingAttributes(!app()->isProduction());
 
         // Мониторинг общего времени выполнения запроса
-        DB::whenQueryingForLongerThan(500, function (Connection $connection, QueryExecuted $event) {
-            // TODO log
+        DB::whenQueryingForLongerThan(500, function (Connection $connection) {
+            logger()
+                ->channel('telegram')
+                ->debug('whenQueryingForLongerThan: ' . $connection->query()->toSql());
         });
+
+        // Если запрос гуляет долго
+        //        $kernel = app(Kernel::class);
+        //        $kernel->whenRequestLifecyrcleIsLongerThan(
+        //            CarbonInterval::seconds(4),
+        //            function () {
+        //                logger()
+        //                    ->channel('telegram')
+        //                    ->debug('whenRequestLifecyrcleIsLongerThan: ' . request()->url());
+        //            });
 
         // Ограничение количества запросов
         RateLimiter::for('global', function (Request $request) {

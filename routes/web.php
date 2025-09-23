@@ -4,7 +4,6 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-//    logger()->channel('telegram')->info('asd');
     return view('welcome');
 });
 
