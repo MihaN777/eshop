@@ -35,11 +35,11 @@ class AppServiceProvider extends ServiceProvider
         Model::preventSilentlyDiscardingAttributes(!app()->isProduction());
 
         // Мониторинг общего времени выполнения запроса
-        DB::whenQueryingForLongerThan(500, function (Connection $connection) {
-            logger()
-                ->channel('telegram')
-                ->debug('whenQueryingForLongerThan: ' . $connection->query()->toSql());
-        });
+        //        DB::whenQueryingForLongerThan(500, function (Connection $connection) {
+        //            logger()
+        //                ->channel('telegram')
+        //                ->debug('whenQueryingForLongerThan: ' . $connection->query()->toSql());
+        //        });
 
         // Если запрос гуляет долго
         //        $kernel = app(Kernel::class);
