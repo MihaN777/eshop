@@ -31,7 +31,7 @@ class Product extends Model
 
     public function brand(): BelongsTo
     {
-        return $this->belongsTo(Brand::class, 'brand_id', 'id', 'brands');
+        return $this->belongsTo(Brand::class);
     }
 
     public function categories(): BelongsToMany
