@@ -19,9 +19,10 @@ return new class extends Migration {
 
             $table->foreignId('brand_id')
                 ->index()
+                ->nullable()
                 ->constrained('brands')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
+                ->nullOnDelete();
 
             $table->timestamps();
         });
