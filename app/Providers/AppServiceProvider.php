@@ -2,14 +2,14 @@
 
 namespace App\Providers;
 
+use Carbon\CarbonInterval;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
-
-//use Illuminate\Contracts\Http\Kernel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,23 +33,22 @@ class AppServiceProvider extends ServiceProvider
         // Model::preventSilentlyDiscardingAttributes(!app()->isProduction());
         Model::shouldBeStrict(!app()->isProduction());
 
-        // Мониторинг общего времени выполнения запроса
+        // Мониторинг времени выполнения запроса
         //        DB::listen(function ($query) {
         //            if ($query->time > 100) {
         //                logger()
         //                    ->channel('telegram')
-        //                    ->debug('whenQueryingForLongerThan: ' . $query->sql, $query->bindings);
+        //                    ->debug('Превышено время выполнения запроса: ' . $query->sql, $query->bindings);
         //            }
         //        });
 
         // Если запрос гуляет долго
-        //        $kernel = app(Kernel::class);
-        //        $kernel->whenRequestLifecyrcleIsLongerThan(
+        //        app(Kernel::class)->whenRequestLifecyrcleIsLongerThan(
         //            CarbonInterval::seconds(4),
         //            function () {
         //                logger()
         //                    ->channel('telegram')
-        //                    ->debug('whenRequestLifecyrcleIsLongerThan: ' . request()->url());
+        //                    ->debug('Долгий запрос: ' . request()->url());
         //            });
 
         // Ограничение количества запросов
