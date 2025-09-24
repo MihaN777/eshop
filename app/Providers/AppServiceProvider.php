@@ -3,10 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,10 +33,12 @@ class AppServiceProvider extends ServiceProvider
         Model::preventSilentlyDiscardingAttributes(!app()->isProduction());
 
         // Мониторинг общего времени выполнения запроса
-        //        DB::whenQueryingForLongerThan(500, function (Connection $connection) {
-        //            logger()
-        //                ->channel('telegram')
-        //                ->debug('whenQueryingForLongerThan: ' . $connection->query()->toSql());
+        //        DB::listen(function ($query) {
+        //            if ($query->time > 100) {
+        //                logger()
+        //                    ->channel('telegram')
+        //                    ->debug('whenQueryingForLongerThan: ' . $query->sql, $query->bindings);
+        //            }
         //        });
 
         // Если запрос гуляет долго
