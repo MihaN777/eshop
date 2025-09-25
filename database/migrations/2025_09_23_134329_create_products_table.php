@@ -33,6 +33,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        if (app()->isLocal()) Schema::dropIfExists('products');
+        if (app()->isLocal()) {
+            Schema::dropIfExists('products');
+        }
     }
 };
