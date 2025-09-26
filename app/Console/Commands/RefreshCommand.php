@@ -14,7 +14,9 @@ class RefreshCommand extends Command
     {
         if (app()->isProduction()) return self::FAILURE;
 
-        Storage::disk('public')->deleteDirectory('images');
+        if (Storage::disk('public')->exists('images')) {
+            Storage::disk('public')->deleteDirectory('images');
+        }
         Storage::disk('public')->makeDirectory('images/brands');
         Storage::disk('public')->makeDirectory('images/products');
 
