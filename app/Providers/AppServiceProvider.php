@@ -9,6 +9,7 @@ use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpFoundation\Response;
 
 class AppServiceProvider extends ServiceProvider
@@ -64,5 +65,11 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)
                 ->by($request->user()?->id ?: $request->ip());
         });
+
+        // Настройка валидации пароля пользователя
+        //        Password::defaults(function () {
+        //            // TODO
+        //            return Password::min(8);
+        //        });
     }
 }
