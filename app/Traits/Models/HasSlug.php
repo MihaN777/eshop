@@ -55,7 +55,7 @@ trait HasSlug
             ->where(self::slugColumn(), $slug)
             // ->where($this->getKeyName(), '!=', $this->getKey()) // Не текущая запись: только при updating
             // SoftDeletes
-            ->withoutGlobalScopes();
+            ->withoutGlobalScopes(); // Исключить глобальные диапазоны запроса (если такие есть) и проверять по всей таблице
 
         return $query->exists();
     }
