@@ -19,7 +19,10 @@ class ProductFactory extends Factory
     {
         return [
             'title' => $this->faker->words(2, true),
-            'image' => '###',
+            'image' => $this->faker->file(
+                base_path('/tests/Fixtures/images/products'),
+                storage_path('/app/public/images/products'),
+                false),
             'price' => $this->faker->numberBetween(1000, 10000),
             'brand_id' => Brand::query()->inRandomOrder()->value('id'),
         ];
