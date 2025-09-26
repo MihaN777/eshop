@@ -10,21 +10,17 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProductFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
             'title' => $this->faker->words(2, true),
-            'image' => $this->faker->file(
-                base_path('/tests/Fixtures/images/products'),
-                storage_path('/app/public/images/products'),
-                false),
             'price' => $this->faker->numberBetween(1000, 10000),
             'brand_id' => Brand::query()->inRandomOrder()->value('id'),
+
+            'image' => '/storage/app/public/images/products/' . $this->faker->file(
+                    base_path('/tests/Fixtures/images/products'),
+                    storage_path('/app/public/images/products'),
+                    false),
         ];
     }
 }
