@@ -20,9 +20,9 @@ class DatabaseSeeder extends Seeder
         //            'email' => 'test@example.com',
         //        ]);
 
-        Brand::factory(20)->create();
-        Category::factory(10)
-            ->has(Product::factory(rand(5, 15))) // Добавить к категории от 5 до 15 товаров
+        Brand::factory(5)->create();
+        Category::factory(5)
+            ->has(Product::factory(rand(5, 10))) // Добавить к категории от 5 до 15 товаров
             ->create();
     }
 }
