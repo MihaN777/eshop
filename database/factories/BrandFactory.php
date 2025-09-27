@@ -13,11 +13,7 @@ class BrandFactory extends Factory
     {
         return [
             'title' => $this->faker->company(),
-            
-            'image' => '/storage/app/public/images/brands/' . $this->faker->file(
-                    base_path('/tests/Fixtures/images/brands'),
-                    storage_path('/app/public/images/brands'),
-                    false),
+            'image' => $this->faker->fixturesImage('brands', 'images/brands'),
         ];
     }
 }
