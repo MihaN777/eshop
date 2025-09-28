@@ -10,9 +10,4 @@ class HomeController extends Controller
     public function index(Request $request): View {
         return view('index');
     }
-
-    public function secondPage(Request $request): View
-    {
-        return view('second_page');
-    }
 }
