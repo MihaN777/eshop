@@ -3,7 +3,7 @@
         {{ $title }}
     </h1>
 
-    <form class="space-y-3">
+    <form class="space-y-3" action="{{ $action }}">
         {{ $slot }}
     </form>
 
