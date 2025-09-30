@@ -53,7 +53,7 @@
             type="password"
             placeholder="Повторите пароль"
             required="required"
-            :isError="$errors->has('password_confirmed')"
+            :isError="$errors->has('password_confirmation')"
         />
 
         @error('password_confirmation')
