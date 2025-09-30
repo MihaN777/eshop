@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/second', [HomeController::class, 'second'])->name('second')->middleware(['auth', 'verified']);
 
 Route::middleware('guest')->group(callback: function () {
     Route::get('/login', [AuthCustomController::class, 'login'])->name('login');
@@ -14,6 +15,12 @@ Route::middleware('guest')->group(callback: function () {
     Route::post('/logout', [AuthCustomController::class, 'logout'])->name('logout');
     Route::get('/forgot_password', [AuthCustomController::class, 'forgotPassword'])->name('forgot-password');
     Route::get('/reset_password', [AuthCustomController::class, 'resetPassword'])->name('reset-password');
+});
+
+Route::middleware('auth')->group(callback: function () {
+    Route::get('/email_notice', [AuthCustomController::class, 'emailNotice'])->name('verification.notice');
+    Route::post('/email_send', [AuthCustomController::class, 'emailSend'])->name('verification.send')->middleware('throttle:6,1');
+    Route::get('/email_verify/{id}/{hash}', [AuthCustomController::class, 'emailVerify'])->name('verification.verify')->middleware('signed');
 });
 
 //Route::get('/dashboard', function () {

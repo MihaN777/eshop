@@ -7,7 +7,11 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index(Request $request): View {
+    public function index(): View {
         return view('index');
+    }
+
+    public function second(): View {
+        return view('second');
     }
 }

@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use Carbon\CarbonInterval;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -64,6 +66,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)
                 ->by($request->user()?->id ?: $request->ip());
+        });
+
+        VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
+            return (new MailMessage)
+                ->subject('Подтвердите адрес электронной почты')
+                ->line('Нажмите кнопку ниже, чтобы подтвердить свой адрес электронной почты.')
+                ->action('Подтвердите адрес электронной почты', $url);
         });
 
         // Настройка валидации пароля пользователя

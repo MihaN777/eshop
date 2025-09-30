@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AuthCustom\SignInRequest;
 use App\Http\Requests\AuthCustom\SignUpRequest;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AuthCustomController extends Controller
 {
@@ -32,9 +36,19 @@ class AuthCustomController extends Controller
         return view('auth_custom.register');
     }
 
-    public function signUp(SignUpRequest $request)
+    public function signUp(SignUpRequest $request): RedirectResponse
     {
-        // TODO
+        $user = User::query()->create([
+            'name' => $request->get('name'),
+            'email' => $request->get('email'),
+            'password' => Hash::make($request->get('password'))
+        ]);
+
+        event(new Registered($user));
+        auth()->login($user);
+
+        return redirect()->route('second');
+        // return redirect()->intended(route('home'));
     }
 
     public function logout(): void
@@ -50,5 +64,24 @@ class AuthCustomController extends Controller
     public function resetPassword(): View
     {
         return view('auth_custom.reset-password');
+    }
+
+    public function emailNotice(): View
+    {
+        return view('auth.verify-email');
+    }
+
+    public function emailSend(Request $request): RedirectResponse
+    {
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('message', 'Ссылка для подтверждения отправлена!');
+    }
+
+    public function emailVerify(EmailVerificationRequest $request): RedirectResponse
+    {
+        $request->fulfill();
+
+        return redirect()->route('home');
     }
 }

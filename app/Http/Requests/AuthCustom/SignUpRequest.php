@@ -3,6 +3,7 @@
 namespace App\Http\Requests\AuthCustom;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class SignUpRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class SignUpRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->guest();
     }
 
     /**
@@ -22,7 +23,19 @@ class SignUpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'min:1', 'max:255'],
+            'email' => ['required', 'email:dns', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed', Password::defaults()],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => str(request('email'))
+            ->squish() // Trim
+            ->lower()
+            ->value()
+        ]);
     }
 }
