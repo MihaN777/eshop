@@ -11,6 +11,7 @@
             type="text"
             placeholder="Имя"
             required="required"
+            value="{{ old('name') }}"
             :isError="$errors->has('name')"
         />
 
@@ -25,6 +26,7 @@
             type="email"
             placeholder="E-mail"
             required="required"
+            value="{{ old('email') }}"
             :isError="$errors->has('email')"
         />
 
