@@ -24,7 +24,7 @@ class AuthCustomController extends Controller
         }
 
         $request->session()->regenerate();
-        return redirect()->intended('dashboard');
+        return redirect()->intended(route('home'));
     }
 
     public function register(): View
