@@ -70,9 +70,9 @@ class AppServiceProvider extends ServiceProvider
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)
-                ->subject('Подтвердите адрес электронной почты')
+                ->subject(config('app.name') . ': Подтверждение электронной почты')
                 ->line('Нажмите кнопку ниже, чтобы подтвердить свой адрес электронной почты.')
-                ->action('Подтвердите адрес электронной почты', $url);
+                ->action('Подтвердить', $url);
         });
 
         // Настройка валидации пароля пользователя
