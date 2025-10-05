@@ -47,7 +47,7 @@ class AuthCustomController extends Controller
         event(new Registered($user));
         auth()->login($user);
 
-        return redirect()->route('second');
+        return redirect()->route('profile');
         // return redirect()->intended(route('home'));
     }
 

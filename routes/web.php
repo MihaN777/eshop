@@ -5,7 +5,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/second', [HomeController::class, 'second'])->name('second')->middleware(['auth', 'verified']);
+Route::get('/profile', [HomeController::class, 'profile'])->name('profile')->middleware(['auth', 'verified']);
 
 Route::middleware('guest')->group(callback: function () {
     Route::get('/login', [AuthCustomController::class, 'login'])->name('login');

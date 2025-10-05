@@ -11,7 +11,7 @@ class HomeController extends Controller
         return view('index');
     }
 
-    public function second(): View {
-        return view('second');
+    public function profile(): View {
+        return view('profile');
     }
 }

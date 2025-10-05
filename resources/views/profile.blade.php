@@ -1,5 +1,5 @@
 @extends('layouts.app-layout')
 
 @section('content')
-<h1>==================== PAGE 2 ====================</h1>
+<h1>==================== USER PROFILE ====================</h1>
 @endsection
