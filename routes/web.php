@@ -12,12 +12,12 @@ Route::middleware('guest')->group(callback: function () {
     Route::post('/sign-in', [AuthCustomController::class, 'signIn'])->name('sign-in');
     Route::get('/register', [AuthCustomController::class, 'register'])->name('register');
     Route::post('/sign-up', [AuthCustomController::class, 'signUp'])->name('sign-up');
-    Route::post('/logout', [AuthCustomController::class, 'logout'])->name('logout');
     Route::get('/forgot-password', [AuthCustomController::class, 'forgotPassword'])->name('forgot-password');
     Route::get('/reset-password', [AuthCustomController::class, 'resetPassword'])->name('reset-password');
 });
 
 Route::middleware('auth')->group(callback: function () {
+    Route::delete('/logout', [AuthCustomController::class, 'logout'])->name('logout');
     Route::get('/email-notice', [AuthCustomController::class, 'emailNotice'])->name('verification.notice');
     Route::post('/email-send', [AuthCustomController::class, 'emailSend'])->name('verification.send')->middleware('throttle:6,1');
     Route::get('/email-verify/{id}/{hash}', [AuthCustomController::class, 'emailVerify'])->name('verification.verify')->middleware('signed');

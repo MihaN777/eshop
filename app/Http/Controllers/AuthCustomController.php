@@ -51,9 +51,13 @@ class AuthCustomController extends Controller
         // return redirect()->intended(route('home'));
     }
 
-    public function logout(): void
+    public function logout(): RedirectResponse
     {
         auth()->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect()->route('home');
     }
 
     public function forgotPassword(): View
