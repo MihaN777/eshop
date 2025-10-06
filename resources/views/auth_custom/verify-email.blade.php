@@ -3,12 +3,6 @@
 @section('title', 'Подтверждение электронной почты')
 
 @section('content')
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4" style="font-weight: bold">
-            На ваш адрес электронной почты была отправлена новая ссылка для подтверждения.
-        </div>
-    @endif
-
     <h1>Подтвердите свой адрес электронной почты:</h1>
 
     <div class="mt-4">

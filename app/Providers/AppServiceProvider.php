@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Carbon\CarbonInterval;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -74,6 +75,16 @@ class AppServiceProvider extends ServiceProvider
                 ->line('Нажмите кнопку ниже, чтобы подтвердить свой адрес электронной почты.')
                 ->action('Подтвердить', $url);
         });
+
+        // TODO: Добавить русский перевод для письма сброса пароля
+        //        ResetPassword::toMailUsing(function (object $notifiable, string $url) {
+        //            return (new MailMessage)
+        //                ->subject(config('app.name') . ': Обновление пароля')
+        //                ->line('Вы получили это электронное письмо, потому что был получен запрос на обновление пароля для вашей учетной записи.')
+        //                ->action('Обновить', $url)
+        //                ->line('Срок действия этой ссылки для обновления пароля истечет через :count минут.', ['count' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire')])
+        //                ->line('Если вы не запрашивали обновление пароля, никаких дальнейших действий не требуется.');
+        //        });
 
         // Настройка валидации пароля пользователя
         //        Password::defaults(function () {

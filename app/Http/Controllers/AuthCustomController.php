@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AuthCustom\ForgotPasswordRequest;
+use App\Http\Requests\AuthCustom\ResetPasswordRequest;
 use App\Http\Requests\AuthCustom\SignInRequest;
 use App\Http\Requests\AuthCustom\SignUpRequest;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class AuthCustomController extends Controller
 {
@@ -48,7 +53,6 @@ class AuthCustomController extends Controller
         auth()->login($user);
 
         return redirect()->route('profile');
-        // return redirect()->intended(route('home'));
     }
 
     public function logout(): RedirectResponse
@@ -65,9 +69,40 @@ class AuthCustomController extends Controller
         return view('auth_custom.forgot-password');
     }
 
-    public function resetPassword(): View
+    public function forgotPasswordSend(ForgotPasswordRequest $request): RedirectResponse
     {
-        return view('auth_custom.reset-password');
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::ResetLinkSent
+            ? back()->with(['message' => 'Вам отправлена ссылка по электронной почте для сброса пароля.'])
+            : back()->withErrors(['email' => 'Учетные данные не верны.']);
+    }
+
+    public function resetPassword(string $token): View
+    {
+        return view('auth_custom.reset-password', ['token' => $token]);
+    }
+
+    public function resetPasswordSend(ResetPasswordRequest $request): RedirectResponse
+    {
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PasswordReset
+            ? redirect()->route('login')->with('message', 'Ваш пароль был обновлен.')
+            : back()->withErrors(['email' => 'Не корректные учетные данные.']);
     }
 
     public function emailNotice(): View
@@ -79,7 +114,7 @@ class AuthCustomController extends Controller
     {
         $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('status', 'verification-link-sent');
+        return back()->with('message', 'На ваш адрес электронной почты была отправлена новая ссылка для подтверждения.');
     }
 
     public function emailVerify(EmailVerificationRequest $request): RedirectResponse
