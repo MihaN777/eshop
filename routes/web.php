@@ -9,18 +9,18 @@ Route::get('/profile', [HomeController::class, 'profile'])->name('profile')->mid
 
 Route::middleware('guest')->group(callback: function () {
     Route::get('/login', [AuthCustomController::class, 'login'])->name('login');
-    Route::post('/sign_in', [AuthCustomController::class, 'signIn'])->name('sign-in');
+    Route::post('/sign-in', [AuthCustomController::class, 'signIn'])->name('sign-in');
     Route::get('/register', [AuthCustomController::class, 'register'])->name('register');
-    Route::post('/sign_up', [AuthCustomController::class, 'signUp'])->name('sign-up');
+    Route::post('/sign-up', [AuthCustomController::class, 'signUp'])->name('sign-up');
     Route::post('/logout', [AuthCustomController::class, 'logout'])->name('logout');
-    Route::get('/forgot_password', [AuthCustomController::class, 'forgotPassword'])->name('forgot-password');
-    Route::get('/reset_password', [AuthCustomController::class, 'resetPassword'])->name('reset-password');
+    Route::get('/forgot-password', [AuthCustomController::class, 'forgotPassword'])->name('forgot-password');
+    Route::get('/reset-password', [AuthCustomController::class, 'resetPassword'])->name('reset-password');
 });
 
 Route::middleware('auth')->group(callback: function () {
-    Route::get('/email_notice', [AuthCustomController::class, 'emailNotice'])->name('verification.notice');
-    Route::post('/email_send', [AuthCustomController::class, 'emailSend'])->name('verification.send')->middleware('throttle:6,1');
-    Route::get('/email_verify/{id}/{hash}', [AuthCustomController::class, 'emailVerify'])->name('verification.verify')->middleware('signed');
+    Route::get('/email-notice', [AuthCustomController::class, 'emailNotice'])->name('verification.notice');
+    Route::post('/email-send', [AuthCustomController::class, 'emailSend'])->name('verification.send')->middleware('throttle:6,1');
+    Route::get('/email-verify/{id}/{hash}', [AuthCustomController::class, 'emailVerify'])->name('verification.verify')->middleware('signed');
 });
 
 //Route::get('/dashboard', function () {
