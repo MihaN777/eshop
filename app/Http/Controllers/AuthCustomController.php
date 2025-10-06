@@ -68,14 +68,14 @@ class AuthCustomController extends Controller
 
     public function emailNotice(): View
     {
-        return view('auth.verify-email');
+        return view('auth_custom.verify-email');
     }
 
     public function emailSend(Request $request): RedirectResponse
     {
         $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('message', 'Ссылка для подтверждения отправлена!');
+        return back()->with('status', 'verification-link-sent');
     }
 
     public function emailVerify(EmailVerificationRequest $request): RedirectResponse
