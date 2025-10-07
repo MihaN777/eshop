@@ -28,7 +28,7 @@ class ResetPasswordNotification extends ResetPassword implements ShouldQueue
         $expire = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire');
 
         return (new MailMessage)
-            ->subject("{$appName} : Обновление пароля")
+            ->subject("{$appName}: Обновление пароля")
             ->line('Вы получили это электронное письмо, потому что был получен запрос на обновление пароля для вашей учетной записи.')
             ->action('Обновить', $url)
             ->line("Срок действия этой ссылки для обновления пароля истечет через {$expire} минут.")
