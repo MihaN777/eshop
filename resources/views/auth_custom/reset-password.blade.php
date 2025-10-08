@@ -55,7 +55,8 @@
             Обновить пароль
         </x-forms.primary-button>
 
-        <x-slot:socialAuth></x-slot:socialAuth>
+        {{-- <x-slot:socialAuth></x-slot:socialAuth> --}}
+
         <x-slot:buttons></x-slot:buttons>
     </x-forms.auth-forms>
 @endsection

@@ -7,7 +7,7 @@
         {{ $slot }}
     </form>
 
-    {{ $socialAuth }}
+    {{-- {{ $socialAuth }} --}}
 
     {{ $buttons }}
 
