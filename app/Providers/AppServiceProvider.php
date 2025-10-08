@@ -66,10 +66,9 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()?->id ?: $request->ip());
         });
 
-        // Настройка валидации пароля пользователя
-        //        Password::defaults(function () {
-        //            // TODO
-        //            return Password::min(8);
-        //        });
+        // Дефолтная валидация пароля
+        Password::defaults(function () {
+            return Password::min(8)->max(255);
+        });
     }
 }
