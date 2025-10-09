@@ -18,6 +18,12 @@
 </head>
 <body class="antialiased">
 
+@if ($message = flash()->get())
+    <div class="{{ $message->class() }}">
+        {{ $message->message() }}
+    </div>
+@endif
+
 <main class="md:min-h-screen md:flex md:items-center md:justify-center py-16 lg:py-20">
     <div class="container">
         <div class="text-center">

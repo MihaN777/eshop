@@ -18,9 +18,9 @@
 </head>
 <body class="antialiased">
 
-@if (flash()->get())
-    <div class="{{ flash()->get()->class() }}">
-        {{ flash()->get()->message() }}
+@if ($message = flash()->get())
+    <div class="{{ $message->class() }}">
+        {{ $message->message() }}
     </div>
 @endif
 
