@@ -9,13 +9,13 @@ Route::get('/profile', [HomeController::class, 'profile'])->name('profile')->mid
 
 Route::middleware('guest')->group(callback: function () {
     Route::get('/login', [AuthCustomController::class, 'login'])->name('login');
-    Route::post('/sign-in', [AuthCustomController::class, 'signIn'])->name('sign.in');
+    Route::post('/sign-in', [AuthCustomController::class, 'signIn'])->name('sign.in')->middleware('throttle:auth');
     Route::get('/register', [AuthCustomController::class, 'register'])->name('register');
-    Route::post('/sign-up', [AuthCustomController::class, 'signUp'])->name('sign.up');
+    Route::post('/sign-up', [AuthCustomController::class, 'signUp'])->name('sign.up')->middleware('throttle:auth');
     Route::get('/forgot-password', [AuthCustomController::class, 'forgotPassword'])->name('password.forgot');
-    Route::post('/forgot-password-send', [AuthCustomController::class, 'forgotPasswordSend'])->name('password.forgot.send');
+    Route::post('/forgot-password-send', [AuthCustomController::class, 'forgotPasswordSend'])->name('password.forgot.send')->middleware('throttle:auth');
     Route::get('/reset-password/{token}', [AuthCustomController::class, 'resetPassword'])->name('password.reset');
-    Route::post('/reset-password-send', [AuthCustomController::class, 'resetPasswordSend'])->name('password.reset.send');
+    Route::post('/reset-password-send', [AuthCustomController::class, 'resetPasswordSend'])->name('password.reset.send')->middleware('throttle:auth');
 });
 
 Route::middleware('auth')->group(callback: function () {
