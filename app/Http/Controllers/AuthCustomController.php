@@ -75,9 +75,12 @@ class AuthCustomController extends Controller
             $request->only('email')
         );
 
-        return $status === Password::ResetLinkSent
-            ? back()->with(['message' => 'Вам отправлена ссылка по электронной почте для сброса пароля.'])
-            : back()->withErrors(['email' => 'Учетные данные не верны.']);
+        if ($status === Password::ResetLinkSent) {
+            flash()->info('Вам отправлена ссылка по электронной почте для сброса пароля.');
+            return back();
+        } else {
+            return back()->withErrors(['email' => 'Учетные данные не верны.']);
+        }
     }
 
     public function resetPassword(string $token): View
@@ -100,9 +103,12 @@ class AuthCustomController extends Controller
             }
         );
 
-        return $status === Password::PasswordReset
-            ? redirect()->route('login')->with('message', 'Ваш пароль был обновлен.')
-            : back()->withErrors(['email' => 'Не корректные учетные данные.']);
+        if ($status === Password::PasswordReset) {
+            flash()->info('Ваш пароль был обновлен.');
+            return redirect()->route('login');
+        } else {
+            return back()->withErrors(['email' => 'Не корректные учетные данные.']);
+        }
     }
 
     public function emailNotice(): View
@@ -113,8 +119,9 @@ class AuthCustomController extends Controller
     public function emailSend(Request $request): RedirectResponse
     {
         $request->user()->sendEmailVerificationNotification();
+        flash()->info('На ваш адрес электронной почты была отправлена новая ссылка для подтверждения.');
 
-        return back()->with('message', 'На ваш адрес электронной почты была отправлена новая ссылка для подтверждения.');
+        return back();
     }
 
     public function emailVerify(EmailVerificationRequest $request): RedirectResponse

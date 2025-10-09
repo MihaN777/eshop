@@ -18,9 +18,9 @@
 </head>
 <body class="antialiased">
 
-@if (session()->has('message'))
-    <div class="mb-4" style="font-weight: bold">
-        {{ session('message') }}
+@if (flash()->get())
+    <div class="{{ flash()->get()->class() }}">
+        {{ flash()->get()->message() }}
     </div>
 @endif
 
