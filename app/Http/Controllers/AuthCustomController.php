@@ -78,9 +78,9 @@ class AuthCustomController extends Controller
         if ($status === Password::ResetLinkSent) {
             flash()->info('Вам отправлена ссылка по электронной почте для сброса пароля.');
             return back();
-        } else {
-            return back()->withErrors(['email' => 'Учетные данные не верны.']);
         }
+
+        return back()->withErrors(['email' => 'Учетные данные не верны.']);
     }
 
     public function resetPassword(string $token): View
@@ -106,9 +106,9 @@ class AuthCustomController extends Controller
         if ($status === Password::PasswordReset) {
             flash()->info('Ваш пароль был обновлен.');
             return redirect()->route('login');
-        } else {
-            return back()->withErrors(['email' => 'Не корректные учетные данные.']);
         }
+
+        return back()->withErrors(['email' => 'Не корректные учетные данные.']);
     }
 
     public function emailNotice(): View
