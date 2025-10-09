@@ -15,7 +15,7 @@ trait HasSlug
 
     protected function makeSlug(): void
     {
-        if (!$this->{$this->slugColumn()}) {
+        if (!$this->{$this->slugColumn()}) { // Проверка на заполненость поля
             $slug = $this->slugUnique(
                 str($this->{$this->slugFrom()})
                     ->slug()
