@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthCustom\ForgotPasswordController;
 use App\Http\Controllers\AuthCustom\LoginController;
-use App\Http\Controllers\AuthCustom\LogoutController;
 use App\Http\Controllers\AuthCustom\RegisterController;
 use App\Http\Controllers\AuthCustom\ResetPasswordController;
 use App\Http\Controllers\AuthCustom\VerifyEmailController;
@@ -20,7 +19,7 @@ Route::middleware('guest')->group(callback: function () {
 });
 
 Route::middleware('auth')->group(callback: function () {
-    Route::delete('/logout', [LogoutController::class, 'logout'])->name('logout');
+    Route::delete('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/email-verify-notice', [VerifyEmailController::class, 'emailNotice'])->name('verification.notice');
     Route::post('/email-verify-send', [VerifyEmailController::class, 'emailSend'])->name('verification.send')->middleware('throttle:6,1');
     Route::get('/email-verify/{id}/{hash}', [VerifyEmailController::class, 'emailVerify'])->name('verification.verify')->middleware('signed');
