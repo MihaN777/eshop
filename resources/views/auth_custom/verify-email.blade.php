@@ -1,4 +1,4 @@
-@extends('layouts.auth-layout')
+@extends('layouts.client-auth-layout')
 
 @section('title', 'Подтверждение электронной почты')
 
