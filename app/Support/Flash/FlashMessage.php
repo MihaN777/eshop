@@ -6,13 +6,13 @@ class FlashMessage
 {
     protected string $message;
     protected string $class;
-    protected string $stile;
+    protected string $style;
 
-    public function __construct(string $message, string $class, string $stile)
+    public function __construct(string $message, string $class, string $style)
     {
         $this->message = $message;
         $this->class = $class;
-        $this->stile = $stile;
+        $this->style = $style;
     }
 
     public function message(): string {
@@ -23,7 +23,7 @@ class FlashMessage
         return $this->class;
     }
 
-    public function stile(): string {
-        return $this->stile;
+    public function style(): string {
+        return $this->style;
     }
 }
