@@ -14,9 +14,9 @@ Route::middleware('guest')->group(callback: function () {
     Route::get('/register', [RegisterController::class, 'register'])->name('register');
     Route::post('/sign-up', [RegisterController::class, 'signUp'])->name('sign.up')->middleware('throttle:auth');
     Route::get('/forgot-password', [ForgotPasswordController::class, 'forgotPassword'])->name('password.forgot');
-    Route::post('/forgot-password-send', [ForgotPasswordController::class, 'forgotPasswordSend'])->name('password.forgot.send'); /* ->middleware('throttle:auth'); // вероятно, throttle уже есть в используемом классе Password (config.auth.passwords) */
+    Route::post('/forgot-password-send', [ForgotPasswordController::class, 'forgotPasswordSend'])->name('password.forgot.send')->middleware('throttle:auth'); // вероятно, throttle уже есть в используемом классе Password (config.auth.passwords)
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'resetPassword'])->name('password.reset');
-    Route::post('/reset-password-send', [ResetPasswordController::class, 'resetPasswordSend'])->name('password.reset.send'); /* ->middleware('throttle:auth'); // вероятно, throttle уже есть в используемом классе Password (config.auth.passwords) */
+    Route::post('/reset-password-send', [ResetPasswordController::class, 'resetPasswordSend'])->name('password.reset.send')->middleware('throttle:auth'); // вероятно, throttle уже есть в используемом классе Password (config.auth.passwords)
     Route::get('/social-auth/{driver}/redirect', [SocialAuthController::class, 'redirect'])->name('social.auth.redirect');
     Route::get('/social-auth/{driver}/callback', [SocialAuthController::class, 'callback'])->name('social.auth.callback');
 });
