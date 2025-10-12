@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthCustom\ForgotPasswordController;
 use App\Http\Controllers\AuthCustom\LoginController;
 use App\Http\Controllers\AuthCustom\RegisterController;
 use App\Http\Controllers\AuthCustom\ResetPasswordController;
-use App\Http\Controllers\AuthCustom\SocialController;
+use App\Http\Controllers\AuthCustom\SocialAuthController;
 use App\Http\Controllers\AuthCustom\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,8 +17,8 @@ Route::middleware('guest')->group(callback: function () {
     Route::post('/forgot-password-send', [ForgotPasswordController::class, 'forgotPasswordSend'])->name('password.forgot.send')->middleware('throttle:auth');
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'resetPassword'])->name('password.reset');
     Route::post('/reset-password-send', [ResetPasswordController::class, 'resetPasswordSend'])->name('password.reset.send')->middleware('throttle:auth');
-    Route::get('/social-auth/github/redirect', [SocialController::class, 'githubRedirect'])->name('socialite.github');
-    Route::get('/social-auth/github/callback', [SocialController::class, 'githubCallback'])->name('socialite.github.callback');
+    Route::get('/social-auth/{driver}/redirect', [SocialAuthController::class, 'redirect'])->name('social.auth.redirect');
+    Route::get('/social-auth/{driver}/callback', [SocialAuthController::class, 'callback'])->name('social.auth.callback');
 });
 
 Route::middleware('auth')->group(callback: function () {

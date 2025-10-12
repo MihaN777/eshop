@@ -30,5 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->renderable(function (DomainException $e) {
+            flash()->alert($e->getMessage());
+            return back();
+        });
     })->create();
