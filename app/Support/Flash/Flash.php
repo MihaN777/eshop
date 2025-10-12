@@ -8,6 +8,7 @@ class Flash
 {
     public const MESSAGE_KEY = 'ctm_flash_message';
     public const MESSAGE_CLASS_KEY = 'ctm_flash_class';
+    public const MESSAGE_STILE_KEY = 'ctm_flash_stile';
 
     protected Session $session;
 
@@ -25,6 +26,7 @@ class Flash
         return new FlashMessage(
             $message,
             $this->session->get(self::MESSAGE_CLASS_KEY, ''),
+            $this->session->get(self::MESSAGE_STILE_KEY, '')
         );
     }
 
@@ -38,9 +40,10 @@ class Flash
         $this->set($message, 'alert');
     }
 
-    public function set(string $message, string $flashClassName): void
+    public function set(string $message, string $flashType): void
     {
         $this->session->flash(self::MESSAGE_KEY, $message);
-        $this->session->flash(self::MESSAGE_CLASS_KEY, config("flash.{$flashClassName}", 'undefined_class_name'));
+        $this->session->flash(self::MESSAGE_CLASS_KEY, config("flash.{$flashType}.class", 'undefined_class'));
+        $this->session->flash(self::MESSAGE_STILE_KEY, config("flash.{$flashType}.stile", 'undefined_stile'));
     }
 }

@@ -42,6 +42,8 @@ export default {
                 white: "#FFF",
                 purple: "#7843E9",
                 pink: "#EC4176",
+                red: "#ba3b3b",
+                green: "#2b873c",
                 dark: "#222",
                 gray: "#454545",
                 darkblue: "#1E1F43",
