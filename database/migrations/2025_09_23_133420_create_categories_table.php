@@ -14,6 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->string('slug')->unique();
             $table->string('title');
+            $table->boolean('on_home_page')->default(false);
+            $table->integer('sorting')->default(999);
             $table->timestamps();
         });
     }

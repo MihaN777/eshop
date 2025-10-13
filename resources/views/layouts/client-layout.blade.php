@@ -16,35 +16,21 @@
             ])
     @endif
 </head>
-<body class="antialiased">
 
-@if ($message = flash()->get())
-    <div class="{{ $message->class() }}" style="{{ $message->style() }}">
-        {{ $message->message() }}
-    </div>
-@endif
+<body class="antialiased" x-data="{ 'showTaskUploadModal': false, 'showTaskEditModal': false }" x-cloak>
 
-<main class="md:min-h-screen md:flex md:items-center md:justify-center py-16 lg:py-20">
+@include('shared.header')
+
+<main class="py-16 lg:py-20">
     <div class="container">
-        <div class="text-center">
-            <a href="{{ route('home')  }}" class="inline-block" rel="home">
-                <img src="{{ Vite::image('logo.svg') }}"
-                     class="w-[148px] md:w-[201px] h-[36px] md:h-[50px]" alt="CutCode">
-            </a>
-        </div>
-
-        @auth
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                @method('DELETE')
-
-                <button type="submit">Выйти</button>
-            </form>
-        @endauth
-
+        @include('shared.flash')
         @yield('content')
     </div>
 </main>
+
+@include('shared.footer')
+
+<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 
 </body>
 </html>

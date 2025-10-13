@@ -16,6 +16,8 @@ return new class extends Migration {
             $table->string('title');
             $table->unsignedInteger('price');
             $table->string('image')->nullable();
+            $table->boolean('on_home_page')->default(false);
+            $table->integer('sorting')->default(999);
 
             $table->foreignId('brand_id')
                 ->index()

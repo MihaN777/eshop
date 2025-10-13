@@ -14,24 +14,24 @@ use Illuminate\Support\Facades\Redirect;
 
 class ProfileController extends Controller
 {
-    private ?Authenticatable $user;
+    private ?Authenticatable $authUser;
 
     public function __construct()
     {
-        $this->user = auth()->user();
+        $this->authUser = auth()->user();
     }
 
     public function profile(): View
     {
-        return view('client.profile', ['user' => $this->user]);
+        return view('client.profile', ['authUser' => $this->authUser]);
     }
 
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $this->user->fill($request->validated());
+        $this->authUser->fill($request->validated());
 
-        if ($this->user->isDirty('email')) $this->user->email_verified_at = null;
-        if (!$this->user->save()) throw new DomainException('Не удалось сохранить данные');
+        if ($this->authUser->isDirty('email')) $this->authUser->email_verified_at = null;
+        if (!$this->authUser->save()) throw new DomainException('Не удалось сохранить данные');
 
         flash()->info('Профиль обновлен');
         return Redirect::route('profile');

@@ -16,16 +16,15 @@
             ])
     @endif
 </head>
-<body class="antialiased">
 
-@if ($message = flash()->get())
-    <div class="{{ $message->class() }}" style="{{ $message->style() }}">
-        {{ $message->message() }}
-    </div>
-@endif
+<body class="antialiased" x-data="{ 'showTaskUploadModal': false, 'showTaskEditModal': false }" x-cloak>
+
+@include('shared.header')
 
 <main class="md:min-h-screen md:flex md:items-center md:justify-center py-16 lg:py-20">
     <div class="container">
+        @include('shared.flash')
+
         <div class="text-center">
             <a href="{{ route('home')  }}" class="inline-block" rel="home">
                 <img src="{{ Vite::image('logo.svg') }}"
@@ -36,6 +35,10 @@
         @yield('content')
     </div>
 </main>
+
+@include('shared.footer')
+
+<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 
 </body>
 </html>
