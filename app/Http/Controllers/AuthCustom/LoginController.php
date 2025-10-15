@@ -16,6 +16,7 @@ class LoginController extends Controller
 
     public function signIn(SignInRequest $request): RedirectResponse
     {
+        // TODO сделать запомнить пользователя - attempt (2-й параметр $remember)
         if (!auth()->attempt($request->validated())) {
             return back()
                 ->withErrors(['email' => 'Учетные данные не верны.'])

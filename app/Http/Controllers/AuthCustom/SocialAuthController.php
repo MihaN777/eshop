@@ -39,6 +39,7 @@ class SocialAuthController extends Controller
             throw new DomainException('Произошла ошибка авторизации через социальную сеть');
         }
 
+        // TODO не обновлять данные при каждом заходе через соц. сети (только через профиль)
         $user = User::query()->updateOrCreate([
             self::SOCIAL_AUTH_DRIVERS[$driver] => $socialUser->id,
         ], [
