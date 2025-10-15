@@ -1,10 +1,16 @@
 <?php
 
+use App\Http\Controllers\Client\CatalogController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Каталог
+Route::get('/catalog/categories', [CatalogController::class, 'categories'])->name('catalog.categories');
+Route::get('/catalog/category-products/{category}', [CatalogController::class, 'categoryProducts'])->name('catalog.category.products');
+Route::get('/catalog/product/{product}', [CatalogController::class, 'product'])->name('catalog.product');
 
 // Профиль
 Route::middleware(['auth', 'verified'])->group(function () {

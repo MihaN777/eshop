@@ -1,6 +1,7 @@
 @extends('layouts.client-layout')
 
 @section('content')
+    {{-- Наши преимущества --}}
     <section>
         <!-- Section heading -->
         <h2 class="text-lg lg:text-[42px] font-black">Наши преимущества</h2>
@@ -52,6 +53,7 @@
         </div>
     </section>
 
+    {{-- Категории --}}
     <section class="mt-16 lg:mt-24">
         <!-- Section heading -->
         <h2 class="text-lg lg:text-[42px] font-black">Категории</h2>
@@ -67,6 +69,7 @@
         </div>
     </section>
 
+    {{-- Продукты --}}
     <section class="mt-16 lg:mt-24">
         <!-- Section heading -->
         <h2 class="text-lg lg:text-[42px] font-black">Каталог товаров</h2>
@@ -119,6 +122,7 @@
         </div>
     </section>
 
+    {{-- Бренды --}}
     <section class="mt-20">
         <!-- Section heading -->
         <h2 class="text-lg lg:text-[42px] font-black">Бренды</h2>
