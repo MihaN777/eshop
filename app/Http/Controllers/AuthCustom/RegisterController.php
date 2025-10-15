@@ -26,6 +26,8 @@ class RegisterController extends Controller
         ]);
 
         event(new Registered($user));
+
+        // TODO сделать запомнить пользователя - login (2-й параметр $remember)
         auth()->login($user);
 
         return redirect()->route('profile');
