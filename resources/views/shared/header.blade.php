@@ -2,9 +2,10 @@
     <div class="container">
         <div class="header-inner flex items-center justify-between lg:justify-start">
             <div class="header-logo shrink-0">
-                <a href="{{ route('home') }}" rel="home">
-                    <img src="{{ Vite::image('logo.svg') }}"
-                         class="w-[120px] xs:w-[148px] md:w-[201px] h-[30px] xs:h-[36px] md:h-[50px]" alt="CutCode">
+                <a href="{{ route('home') }}" rel="home" style="font-weight:bold; font-size:40px;">
+                    [ LOGO ]
+{{--                    <img src="{{ Vite::image('logo.svg') }}"--}}
+{{--                         class="w-[120px] xs:w-[148px] md:w-[201px] h-[30px] xs:h-[36px] md:h-[50px]" alt="Logo">--}}
                 </a>
             </div><!-- /.header-logo -->
 
