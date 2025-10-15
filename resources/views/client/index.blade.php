@@ -61,7 +61,7 @@
         <!-- Categories -->
         <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 mt-8">
             @foreach($categories as $category)
-                <a href="catalog.html"
+                <a href="{{ route('catalog.category.products', $category->id) }}"
                    class="p-3 sm:p-4 2xl:p-6 rounded-xl bg-card hover:bg-pink text-xxs sm:text-xs lg:text-sm text-white font-semibold">
                     {{ $category->title }}
                 </a>
@@ -80,13 +80,15 @@
             @foreach($products as $product)
                 <!-- Product card -->
                 <div class="product-card flex flex-col rounded-3xl bg-card">
-                    <a href="product.html" class="product-card-photo overflow-hidden h-[320px] rounded-3xl">
+                    <a href="{{ route('catalog.product', $product->id) }}" class="product-card-photo overflow-hidden h-[320px] rounded-3xl">
                         <img src="{{ asset($product->image) }}" class="object-cover w-full h-full"
                              alt="SteelSeries Aerox 3 Snow">
                     </a>
                     <div class="grow flex flex-col py-8 px-6">
-                        <h3 class="text-sm lg:text-md font-black"><a href="product.html"
-                                                                     class="inline-block text-white hover:text-pink">{{ $product->title }}</a>
+                        <h3 class="text-sm lg:text-md font-black">
+                            <a href="{{ route('catalog.product', $product->id) }}" class="inline-block text-white hover:text-pink">
+                                {{ $product->title }}
+                            </a>
                         </h3>
                         <div class="mt-auto pt-6">
                             <div class="mb-3 text-sm font-semibold">{{ $product->price }} ₽</div>
@@ -118,7 +120,7 @@
         </div>
 
         <div class="mt-12 text-center">
-            <a href="catalog.html" class="btn btn-purple">Все товары &nbsp;→</a>
+            <a href="{{ route('catalog.categories') }}" class="btn btn-purple">Все товары &nbsp;→</a>
         </div>
     </section>
 
