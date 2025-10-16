@@ -73,4 +73,11 @@ class User extends Authenticatable implements MustVerifyEmail
             get: fn () => "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name={$this->name}",
         );
     }
+
+    // Функции модели
+
+    public function isSocialRegistered(): bool
+    {
+        return isset($this->github_id);
+    }
 }

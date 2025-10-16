@@ -2,23 +2,31 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Actions\Client\Profile\DeleteAction;
+use App\Actions\Client\Profile\UpdateAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\ProfileDeleteRequest;
 use App\Http\Requests\Client\ProfileUpdateRequest;
-use DomainException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
+use Throwable;
 
 class ProfileController extends Controller
 {
-    private ?Authenticatable $authUser;
+    private Authenticatable $authUser;
 
     public function __construct()
     {
-        $this->authUser = auth()->user();
+        try {
+            $this->authUser = auth()->user();
+        } catch (Throwable $e) {
+            logger()
+                ->channel('telegram')
+                ->error("[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}");
+
+            abort(500);
+        }
     }
 
     public function profile(): View
@@ -26,32 +34,19 @@ class ProfileController extends Controller
         return view('client.profile', ['authUser' => $this->authUser]);
     }
 
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request, UpdateAction $action): RedirectResponse
     {
-        $this->authUser->fill($request->validated());
-
-        if ($this->authUser->isDirty('email')) $this->authUser->email_verified_at = null;
-        if (!$this->authUser->save()) throw new DomainException('Не удалось сохранить данные');
-
+        $action($request, $this->authUser);
         flash()->info('Профиль обновлен');
-        return Redirect::route('profile');
+
+        return redirect()->route('profile');
     }
 
-    public function delete(Request $request): RedirectResponse
+    public function delete(ProfileDeleteRequest $request, DeleteAction $action): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+        $action($this->authUser);
+        flash()->info('Ваш профиль был успешно удален');
 
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return redirect()->route('home');
     }
 }

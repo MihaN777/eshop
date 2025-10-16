@@ -16,7 +16,7 @@ Route::get('/catalog/product/{product}', [CatalogController::class, 'product'])-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'profile'])->name('profile');
     Route::patch('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile/delete', [ProfileController::class, 'destroy'])->name('profile.delete');
+    Route::delete('/profile/delete', [ProfileController::class, 'delete'])->name('profile.delete');
 });
 
 require __DIR__ . '/admin.php';
