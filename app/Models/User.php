@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\AuthCustom\SocialAuthController;
 use App\Notifications\AuthCustom\ResetPasswordNotification;
 use App\Notifications\AuthCustom\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -70,7 +71,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function avatar(): Attribute
     {
         return Attribute::make(
-            get: fn () => "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name={$this->name}",
+            get: fn() => "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name={$this->name}",
         );
     }
 
@@ -78,6 +79,10 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isSocialRegistered(): bool
     {
-        return isset($this->github_id);
+        foreach (SocialAuthController::SOCIAL_AUTH_DRIVERS as $driver => $id) {
+            if (isset($this->{$id})) return true;
+        }
+
+        return false;
     }
 }

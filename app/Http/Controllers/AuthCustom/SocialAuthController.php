@@ -13,6 +13,7 @@ use Throwable;
 
 class SocialAuthController extends Controller
 {
+    // TODO SOCIAL_AUTH_DRIVERS вынести в конфиг?
     public const SOCIAL_AUTH_DRIVERS = [
         'github' => 'github_id',
         // 'vk' => 'vk_id',
