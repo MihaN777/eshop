@@ -3,6 +3,7 @@
 namespace App\Logging\Telegram;
 
 use App\Services\Telegram\TelegramBotApi;
+use Illuminate\Support\Facades\Log;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use Monolog\LogRecord;
@@ -23,10 +24,16 @@ class TelegramLoggerHandler extends AbstractProcessingHandler
 
     protected function write(LogRecord $record): void
     {
+        $date = now()->format('Y-m-d H:i:s');
+        $level = strtoupper($record->level->name ?? 'UNDEFINED_LEVEL');
+
+        // Дублируем ошибку в лог-файл
+        if ($level === 'ERROR') Log::error($record->message);
+
         TelegramBotApi::sendMessage(
             $this->token,
             $this->chatId,
-            $record->formatted
+            "[{$date}] {$level}: {$record->message}"
         );
     }
 }
