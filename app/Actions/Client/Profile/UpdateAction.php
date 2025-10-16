@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAction
 {
-    public function __invoke(FormRequest $request, Authenticatable $authUser)
+    public function __invoke(FormRequest $request, Authenticatable $authUser): void
     {
         $authUser->fill($request->validated());
 

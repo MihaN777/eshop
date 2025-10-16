@@ -7,10 +7,10 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class DeleteAction
 {
-    public function __invoke(Authenticatable $authUser)
+    public function __invoke(Authenticatable $authUser): void
     {
         auth()->logout();
-        if(!$authUser->delete()) throw new DomainException('Не удалось удалить пользователя');
+        if (!$authUser->delete()) throw new DomainException('Не удалось удалить пользователя');
 
         request()->session()->invalidate();
         request()->session()->regenerateToken();
