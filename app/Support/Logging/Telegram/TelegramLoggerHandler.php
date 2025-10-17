@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Logging\Telegram;
+namespace App\Support\Logging\Telegram;
 
 use App\Services\Telegram\TelegramBotApi;
 use Illuminate\Support\Facades\Log;
