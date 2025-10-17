@@ -3,17 +3,18 @@
 namespace App\Actions\Client\Profile;
 
 use DomainException;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAction
 {
-    public function __invoke(FormRequest $request, Authenticatable $authUser): void
+    public function __invoke(UpdateDTO $data): void
     {
-        $authUser->fill($request->validated());
+        $data->authUser->fill([
+            'name' => $data->name,
+            'email' => $data->email,
+        ]);
 
-        if ($authUser->isDirty('email')) $authUser->email_verified_at = null;
-        if (!$authUser->save()) throw new DomainException('Не удалось сохранить данные');
+        if ($data->authUser->isDirty('email')) $data->authUser->email_verified_at = null;
+        if (!$data->authUser->save()) throw new DomainException('Не удалось сохранить данные');
     }
 
 }

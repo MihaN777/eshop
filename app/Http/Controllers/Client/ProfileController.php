@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Actions\Client\Profile\DeleteAction;
 use App\Actions\Client\Profile\UpdateAction;
+use App\Actions\Client\Profile\UpdateDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ProfileDeleteRequest;
 use App\Http\Requests\Client\ProfileUpdateRequest;
@@ -36,7 +37,10 @@ class ProfileController extends Controller
 
     public function update(ProfileUpdateRequest $request, UpdateAction $action): RedirectResponse
     {
-        $action($request, $this->authUser);
+        // $request->merge(['authUser' => $this->authUser]);
+        // $action(UpdateDTO::make(...$request->only(['name', 'email', 'authUser'])));
+
+        $action(UpdateDTO::fromRequestWith($request, $this->authUser));
         flash()->info('Профиль обновлен');
 
         return redirect()->route('profile');
