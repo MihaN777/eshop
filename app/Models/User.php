@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Http\Controllers\AuthCustom\SocialAuthController;
 use App\Notifications\AuthCustom\ResetPasswordNotification;
 use App\Notifications\AuthCustom\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -79,7 +78,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isSocialRegistered(): bool
     {
-        foreach (SocialAuthController::SOCIAL_AUTH_DRIVERS as $driver => $id) {
+        foreach (config('social_auth.drivers', []) as $driver => $id) {
             if (isset($this->{$id})) return true;
         }
 

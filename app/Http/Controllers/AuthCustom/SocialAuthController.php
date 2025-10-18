@@ -13,45 +13,53 @@ use Throwable;
 
 class SocialAuthController extends Controller
 {
-    // TODO SOCIAL_AUTH_DRIVERS вынести в конфиг?
-    public const SOCIAL_AUTH_DRIVERS = [
-        'github' => 'github_id',
-        // 'vk' => 'vk_id',
-    ];
+    private array $drivers;
+
+    public function __construct()
+    {
+        $this->drivers = config('social_auth.drivers', []);
+    }
 
     public function redirect(string $driver): \Symfony\Component\HttpFoundation\RedirectResponse|RedirectResponse
     {
-        if (!array_key_exists($driver, self::SOCIAL_AUTH_DRIVERS)) throw new DomainException('Драйвер социальной сети не поддерживатеся');
+        $this->isDriverSupported($driver);
 
         try {
             return Socialite::driver($driver)->redirect();
         } catch (Throwable $e) {
+            logger()->channel('telegram')->error("[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}");
             throw new DomainException('Произошла ошибка перенаправления на страницу авторизации');
         }
     }
 
     public function callback(string $driver): RedirectResponse
     {
-        if (!array_key_exists($driver, self::SOCIAL_AUTH_DRIVERS)) throw new DomainException('Драйвер социальной сети не поддерживатеся');
+        $this->isDriverSupported($driver);
 
         try {
             $socialUser = Socialite::driver($driver)->user();
+
+            // updateOrCreate для обновления данных при каждом заходе через соц. сеть
+            $user = User::query()->firstOrCreate([
+                $this->drivers[$driver] => $socialUser->id,
+            ], [
+                'name' => $socialUser->name ?? $socialUser->nickname,
+                'email' => $socialUser->email,
+                'password' => Hash::make(Str::random(20)),
+                'email_verified_at' => now()->format('Y-m-d H:i:s'),
+            ]);
         } catch (Throwable $e) {
+            logger()->channel('telegram')->error("[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}");
             throw new DomainException('Произошла ошибка авторизации через социальную сеть');
         }
-
-        // TODO не обновлять данные при каждом заходе через соц. сети (только через профиль)
-        $user = User::query()->updateOrCreate([
-            self::SOCIAL_AUTH_DRIVERS[$driver] => $socialUser->id,
-        ], [
-            'name' => $socialUser->name ?? $socialUser->nickname,
-            'email' => $socialUser->email,
-            'password' => Hash::make(Str::random(15)),
-            'email_verified_at' => now()->format('Y-m-d H:i:s'),
-        ]);
 
         auth()->login($user);
 
         return redirect()->intended(route('home'));
+    }
+
+    private function isDriverSupported(string $driver): void
+    {
+        if (!array_key_exists($driver, $this->drivers)) throw new DomainException('Драйвер социальной сети не поддерживатеся');
     }
 }
