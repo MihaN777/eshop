@@ -15,7 +15,7 @@ class TelegramLoggerHandler extends AbstractProcessingHandler
 
     public function __construct($config)
     {
-        $this->chatId = (int) $config['chat_id'];
+        $this->chatId = (int)$config['chat_id'];
         $this->token = $config['token'];
         $level = Logger::toMonologLevel($config["level"]);
 
@@ -28,7 +28,7 @@ class TelegramLoggerHandler extends AbstractProcessingHandler
         $level = strtoupper($record->level->name ?? 'UNDEFINED_LEVEL');
 
         // Дублируем ошибку в лог-файл
-        if ($level === 'ERROR') Log::error($record->message);
+        // if ($level === 'ERROR') Log::error($record->message);
 
         TelegramBotApi::sendMessage(
             $this->token,
