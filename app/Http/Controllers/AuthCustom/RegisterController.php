@@ -19,6 +19,8 @@ class RegisterController extends Controller
 
     public function signUp(SignUpRequest $request): RedirectResponse
     {
+        $remember = $request->boolean('remember');
+
         $user = User::query()->create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
@@ -26,9 +28,7 @@ class RegisterController extends Controller
         ]);
 
         event(new Registered($user));
-
-        // TODO сделать запомнить пользователя - login (2-й параметр $remember)
-        auth()->login($user);
+        auth()->login($user, $remember);
 
         return redirect()->route('profile');
     }
