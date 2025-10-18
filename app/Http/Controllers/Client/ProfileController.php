@@ -2,53 +2,34 @@
 
 namespace App\Http\Controllers\Client;
 
-use App\Actions\Client\Profile\DeleteAction;
-use App\Actions\Client\Profile\UpdateAction;
-use App\Actions\Client\Profile\UpdateDTO;
+use App\Actions\DTOs\UserUpdateDTO;
+use App\Actions\UserDeleteAction;
+use App\Actions\UserUpdateAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ProfileDeleteRequest;
 use App\Http\Requests\Client\ProfileUpdateRequest;
-use Illuminate\Contracts\Auth\Authenticatable;
+use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Throwable;
 
 class ProfileController extends Controller
 {
-    private Authenticatable $authUser;
-
-    public function __construct()
-    {
-        try {
-            $this->authUser = auth()->user();
-        } catch (Throwable $e) {
-            logger()
-                ->channel('telegram')
-                ->error("[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}");
-
-            abort(500);
-        }
-    }
-
     public function profile(): View
     {
-        return view('client.profile', ['authUser' => $this->authUser]);
+        return view('client.profile', ['authUser' => auth()->user()]);
     }
 
-    public function update(ProfileUpdateRequest $request, UpdateAction $action): RedirectResponse
+    public function update(ProfileUpdateRequest $request, UserUpdateAction $action): RedirectResponse
     {
-        // $request->merge(['authUser' => $this->authUser]);
-        // $action(UpdateDTO::make(...$request->only(['name', 'email', 'authUser'])));
-
-        $action(UpdateDTO::fromRequestWith($request, $this->authUser));
+        if(!$action(auth()->user(), UserUpdateDTO::fromRequest($request))) throw new DomainException('Не удалось обновить профиль пользователя');;
         flash()->info('Профиль обновлен');
 
         return redirect()->route('profile');
     }
 
-    public function delete(ProfileDeleteRequest $request, DeleteAction $action): RedirectResponse
+    public function delete(ProfileDeleteRequest $request, UserDeleteAction $action): RedirectResponse
     {
-        $action($this->authUser);
+        if(!$action(auth()->user())) throw new DomainException('Не удалось удалить профиль пользователя');
         flash()->info('Ваш профиль был успешно удален');
 
         return redirect()->route('home');
