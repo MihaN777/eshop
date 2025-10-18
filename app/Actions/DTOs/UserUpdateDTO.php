@@ -2,7 +2,7 @@
 
 namespace App\Actions\DTOs;
 
-use App\Support\Traits\DTOs\Makeable;
+use App\Support\Traits\Makeable;
 use Illuminate\Http\Request;
 
 final class UserUpdateDTO

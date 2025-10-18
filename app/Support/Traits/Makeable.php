@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Traits\DTOs;
+namespace App\Support\Traits;
 
 trait Makeable
 {
