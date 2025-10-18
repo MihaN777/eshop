@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Casts\PriceCast;
 use App\Support\Traits\Models\HasSlug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,6 +24,10 @@ class Product extends Model
         'on_home_page',
         'sorting',
         'brand_id',
+    ];
+
+    protected $casts = [
+        'price' => PriceCast::class,
     ];
 
     public function scopeHomePage(Builder $query)
