@@ -76,7 +76,7 @@
         </div>
 
         <div class="mt-12 text-center">
-            <a href="{{ route('catalog.categories') }}" class="btn btn-purple">Все товары &nbsp;→</a>
+            <a href="{{ route('catalog') }}" class="btn btn-purple">Все товары &nbsp;→</a>
         </div>
     </section>
 
