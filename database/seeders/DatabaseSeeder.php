@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Image;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 
@@ -22,7 +23,9 @@ class DatabaseSeeder extends Seeder
 
         Brand::factory(5)->create();
         Category::factory(5)
-            ->has(Product::factory(rand(5, 10))) // Добавить к категории от 5 до 15 товаров
+            ->has(Product::factory(rand(5, 10))
+                    ->has(Image::factory(1))
+            )
             ->create();
     }
 }

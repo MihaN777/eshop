@@ -1,6 +1,6 @@
 <div class="product-card flex flex-col rounded-3xl bg-card">
     <a href="{{ route('catalog.product', $product->id) }}" class="product-card-photo overflow-hidden h-[320px] rounded-3xl">
-        <img src="{{ asset($product->image) }}" class="object-cover w-full h-full"
+        <img src="{{ asset($product->imagePreview()) }}" class="object-cover w-full h-full"
              alt="SteelSeries Aerox 3 Snow">
     </a>
     <div class="grow flex flex-col py-8 px-6">
