@@ -9,7 +9,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Каталог
 Route::get('/catalog/{category:slug?}', [CatalogController::class, 'catalog'])->name('catalog');
-Route::get('/catalog/product/{product}', [CatalogController::class, 'product'])->name('catalog.product');
+Route::get('/catalog/product/{product:slug}', [CatalogController::class, 'product'])->name('catalog.product');
 
 // Профиль
 Route::middleware(['auth', 'verified'])->group(function () {
