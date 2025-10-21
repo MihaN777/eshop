@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Каталог
-Route::get('/catalog/categories', [CatalogController::class, 'categories'])->name('catalog.categories');
-Route::get('/catalog/category-products/{category}', [CatalogController::class, 'categoryProducts'])->name('catalog.category.products');
+Route::get('/catalog/{category:slug?}', [CatalogController::class, 'catalog'])->name('catalog');
 Route::get('/catalog/product/{product}', [CatalogController::class, 'product'])->name('catalog.product');
 
 // Профиль
