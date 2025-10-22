@@ -4,7 +4,7 @@ namespace App\Http\Controllers\AuthCustom;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use DomainException;
+use App\Support\Exceptions\ProjectException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,8 +27,10 @@ class SocialAuthController extends Controller
         try {
             return Socialite::driver($driver)->redirect();
         } catch (Throwable $e) {
-            logger()->channel('telegram')->error("[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}");
-            throw new DomainException('Произошла ошибка перенаправления на страницу авторизации');
+            throw new ProjectException(
+                'Произошла ошибка перенаправления на страницу авторизации',
+                "[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}"
+            );
         }
     }
 
@@ -49,8 +51,10 @@ class SocialAuthController extends Controller
                 'email_verified_at' => now()->format('Y-m-d H:i:s'),
             ]);
         } catch (Throwable $e) {
-            logger()->channel('telegram')->error("[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}");
-            throw new DomainException('Произошла ошибка авторизации через социальную сеть');
+            throw new ProjectException(
+                'Произошла ошибка авторизации через социальную сеть',
+                "[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}"
+            );
         }
 
         auth()->login($user);
@@ -60,6 +64,6 @@ class SocialAuthController extends Controller
 
     private function isDriverSupported(string $driver): void
     {
-        if (!array_key_exists($driver, $this->drivers)) throw new DomainException('Драйвер социальной сети не поддерживатеся');
+        if (!array_key_exists($driver, $this->drivers)) throw new ProjectException('Драйвер социальной сети не поддерживатеся');
     }
 }

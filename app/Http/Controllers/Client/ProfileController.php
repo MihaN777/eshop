@@ -8,7 +8,7 @@ use App\Actions\UserUpdateAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ProfileDeleteRequest;
 use App\Http\Requests\Client\ProfileUpdateRequest;
-use DomainException;
+use App\Support\Exceptions\ProjectException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -21,7 +21,7 @@ class ProfileController extends Controller
 
     public function update(ProfileUpdateRequest $request, UserUpdateAction $action): RedirectResponse
     {
-        if(!$action(auth()->user(), UserUpdateDTO::fromRequest($request))) throw new DomainException('Не удалось обновить профиль пользователя');;
+        if(!$action(auth()->user(), UserUpdateDTO::fromRequest($request))) throw new ProjectException('Не удалось обновить профиль пользователя');;
         flash()->info('Профиль обновлен');
 
         return redirect()->route('profile');
@@ -29,7 +29,7 @@ class ProfileController extends Controller
 
     public function delete(ProfileDeleteRequest $request, UserDeleteAction $action): RedirectResponse
     {
-        if(!$action(auth()->user())) throw new DomainException('Не удалось удалить профиль пользователя');
+        if(!$action(auth()->user())) throw new ProjectException('Не удалось удалить профиль пользователя');
         flash()->info('Ваш профиль был успешно удален');
 
         return redirect()->route('home');
