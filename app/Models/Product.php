@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -58,12 +59,12 @@ class Product extends Model
 
             if ($column->contains(['price', 'title'])) {
                 $direction = $column->contains('-') ? 'DESC' : 'ASC';
-                $q->orderBy((string) $column->remove('-'), $direction);
+                $q->orderBy((string)$column->remove('-'), $direction);
             }
         });
     }
 
-    // Relations
+    // Отношения
 
     public function brand(): BelongsTo
     {
@@ -80,10 +81,12 @@ class Product extends Model
         return $this->hasMany(Image::class);
     }
 
-    // Functions
+    // Функции модели
 
-    public function imagePreview(): string
+    public function storagePreviewImage(): string
     {
-        return $this->images()->where('type', 'preview')->first()?->path ?? Image::PRODUCT_IMAGE_DEFAULT_PREVIEW;
+        $path = $this->images()->where('type', 'preview')->first()?->path;
+
+        return (!$path || !Storage::exists($path)) ? Image::PRODUCT_IMAGE_DEFAULT_PREVIEW : '/storage/' . trim($path, '/\\');
     }
 }

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Observers\ImageObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+//#[ObservedBy([ImageObserver::class])]
 class Image extends Model
 {
     /** @use HasFactory<\Database\Factories\ImageFactory> */
@@ -21,7 +24,17 @@ class Image extends Model
         'product_id',
     ];
 
-    public function product(): BelongsTo {
+    // Отношения
+
+    public function product(): BelongsTo
+    {
         return $this->belongsTo(Product::class);
+    }
+
+    // Функции модели
+
+    public function storageImage(): string
+    {
+        return '/storage/' . trim($this->path, '/\\');
     }
 }
