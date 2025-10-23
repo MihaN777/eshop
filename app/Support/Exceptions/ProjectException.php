@@ -4,6 +4,8 @@ namespace App\Support\Exceptions;
 
 use DomainException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ProjectException extends DomainException
 {
@@ -15,7 +17,7 @@ class ProjectException extends DomainException
         parent::__construct($flashMessage);
     }
 
-    public function render(): RedirectResponse
+    public function render(Request $request): Response|RedirectResponse
     {
         flash()->alert($this->getMessage());
         return back();
