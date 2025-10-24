@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Category;
 use App\Models\Image;
 use App\Models\Product;
 use Illuminate\Console\Command;
@@ -26,14 +27,16 @@ class TestCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
 //        DB::beginTransaction();
-//        $image = Image::query()->where('id', 5)->first();
+//
+//        $image = Image::query()->where('id', 1)->first();
 //        $image->delete();
 //
-//        $product = Product::query()->where('id', 7)->first();
-//        $product->delete();
+//        $product = Product::query()->where('id', 3)->first();
+//        $product->deleteWithRelations();
+//
 //        DB::commit();
 
         return self::SUCCESS;
