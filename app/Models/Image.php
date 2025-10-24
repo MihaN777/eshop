@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-//#[ObservedBy([ImageObserver::class])]
+#[ObservedBy([ImageObserver::class])]
 class Image extends Model
 {
     /** @use HasFactory<\Database\Factories\ImageFactory> */
