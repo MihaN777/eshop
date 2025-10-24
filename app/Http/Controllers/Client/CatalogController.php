@@ -7,12 +7,17 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
     public function catalog(?Category $category): View
     {
+        // TODO включить sort в запрос с фильтрами
+        // $uri = request()->getRequestUri();
+        // $queryStr = substr($uri, strpos($uri, '?'));
+
         $brands = Brand::query()
             ->select(['id', 'title'])
             ->has('products')
@@ -25,24 +30,17 @@ class CatalogController extends Controller
 
         $products = Product::query()
             ->select(['id', 'slug', 'title', 'price'])
+            ->when($category->exists, function (Builder $q) use ($category) {
+                $q->whereRelation(
+                    'categories',
+                    'categories.id',
+                    '=',
+                    $category->id
+                );
+            })
             ->filtered()
             ->sorted()
             ->paginate(6);
-
-        //        $products = null;
-        //        if (!$category->exists) {
-        //            $products = Product::query()
-        //                ->select(['id', 'slug', 'title', 'price'])
-        //                ->filtered()
-        //                ->sorted()
-        //                ->paginate(6);
-        //        } else {
-        //            $products = $category->products()
-        //                ->select(['id', 'slug', 'title', 'price'])
-        //                ->filtered()
-        //                ->sorted()
-        //                ->paginate(6);
-        //        }
 
         return view('client.catalog.index', compact(
             'category',
