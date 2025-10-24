@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class Product extends Model
 {
@@ -82,6 +84,27 @@ class Product extends Model
     }
 
     // Функции модели
+
+    public function deleteWithRelations(): bool
+    {
+        $enableTransaction = DB::transactionLevel() > 0 ? false : true;
+
+        if ($enableTransaction) DB::beginTransaction();
+
+        try {
+            $images = $this->images;
+            foreach ($images as $image) $image->delete();
+
+            $this->delete();
+        } catch (Throwable) {
+            if ($enableTransaction) DB::rollBack();
+            return false;
+        }
+
+        if ($enableTransaction) DB::commit();
+
+        return true;
+    }
 
     public function storagePreviewImage(): string
     {
