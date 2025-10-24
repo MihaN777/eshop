@@ -16,14 +16,14 @@ return new class extends Migration {
             $table->foreignId('category_id')
                 ->index()
                 ->constrained('categories')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
 
             $table->foreignId('product_id')
                 ->index()
                 ->constrained('products')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
 
             $table->timestamps();
         });

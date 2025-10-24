@@ -22,7 +22,7 @@ return new class extends Migration {
                 ->index()
                 ->nullable()
                 ->constrained('brands')
-                ->onUpdate('cascade')
+                ->cascadeOnUpdate()
                 ->nullOnDelete();
 
             $table->timestamps();
