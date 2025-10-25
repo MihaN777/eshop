@@ -14,9 +14,11 @@ return new class extends Migration {
             $table->id();
             $table->string('slug')->unique();
             $table->string('title');
+            $table->text('text')->nullable();
             $table->unsignedInteger('price');
             $table->boolean('on_home_page')->default(false);
             $table->integer('sorting')->default(999);
+            $table->fullText(['title', 'text']);
 
             $table->foreignId('brand_id')
                 ->index()

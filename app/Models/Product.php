@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Scout\Attributes\SearchUsingFullText;
+use Laravel\Scout\Attributes\SearchUsingPrefix;
+use Laravel\Scout\Searchable;
 use Throwable;
 
 class Product extends Model
@@ -20,9 +23,12 @@ class Product extends Model
     use HasFactory;
     use HasSlug;
 
+    // use Searchable;
+
     protected $fillable = [
         'slug',
         'title',
+        'text',
         'price',
         'on_home_page',
         'sorting',
@@ -32,6 +38,18 @@ class Product extends Model
     protected $casts = [
         'price' => PriceCast::class,
     ];
+
+    // Поля для поиска через Laravel Scout
+    //    #[SearchUsingPrefix(['id'])] // Поиск в рамках WHERE LIKE
+    //    #[SearchUsingFullText(['title', 'text'])] // Поиск в рамках FULLTEXT
+    //    public function toSearchableArray(): array
+    //    {
+    //        return [
+    //            'id' => $this->id,
+    //            'title' => $this->title,
+    //            'text' => $this->text,
+    //        ];
+    //    }
 
     // Scopes
 
