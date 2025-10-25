@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
-    public function catalog(?Category $category): View
+    public function __invoke(?Category $category): View
     {
         // TODO включить sort в запрос с фильтрами
         // $uri = request()->getRequestUri();
@@ -47,13 +47,6 @@ class CatalogController extends Controller
             'brands',
             'categories',
             'products',
-        ));
-    }
-
-    public function product(Product $product): View
-    {
-        return view('client.catalog.product', compact(
-            'product',
         ));
     }
 }

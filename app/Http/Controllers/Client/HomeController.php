@@ -10,7 +10,7 @@ use Illuminate\Contracts\View\View;
 
 class HomeController extends Controller
 {
-    public function index(): View
+    public function __invoke(): View
     {
         $brands = Brand::query()
             ->homePage()
