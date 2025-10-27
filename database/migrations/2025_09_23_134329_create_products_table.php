@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->string('title');
             $table->text('text')->nullable();
-            $table->unsignedInteger('price');
+            $table->unsignedInteger('price')->index();
             $table->boolean('on_home_page')->default(false);
             $table->integer('sorting')->default(999);
             $table->fullText(['title', 'text']);
