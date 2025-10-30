@@ -70,8 +70,9 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
-                            <a href="catalog.html"
-                               class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-card text-white hover:text-pink">
+                            <a href="{{ filter_url($category, ['view' => 'grid']) }}"
+                               class="@if(is_catalog_view('grid')) pointer-events-none text-pink @else text-white hover:text-pink @endif inline-flex items-center justify-center w-10 h-10 rounded-md bg-card">
+
                                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                                      viewBox="0 0 52 52">
                                     <path fill-rule="evenodd"
@@ -79,8 +80,10 @@
                                           clip-rule="evenodd"/>
                                 </svg>
                             </a>
-                            <a href="catalog-list.html"
-                               class="pointer-events-none inline-flex items-center justify-center w-10 h-10 rounded-md bg-card text-pink">
+
+                            <a href="{{ filter_url($category, ['view' => 'list']) }}"
+                               class="@if(is_catalog_view('list')) pointer-events-none text-pink @else text-white hover:text-pink @endif inline-flex items-center justify-center w-10 h-10 rounded-md bg-card">
+
                                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                                      viewBox="0 0 52 52">
                                     <path fill-rule="evenodd"
@@ -89,36 +92,52 @@
                                 </svg>
                             </a>
                         </div>
+
                         <div class="text-body text-xxs sm:text-xs !leading-5">
                             Найдено: <strong>{{ $products->total() }} товаров</strong>
                         </div>
                     </div>
 
-                    <div x-data="{}" class="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <span class="text-body text-xxs sm:text-xs !leading-5">Сортировать по</span>
-                        <form x-ref="sortForm" action="{{ route('catalog', $category) }}">
-                            <select
-                                    name="sort"
-                                    x-on:change="$refs.sortForm.submit()"
-                                    class="form-select w-full h-12 px-4 rounded-lg border border-body/10 focus:border-pink focus:shadow-[0_0_0_3px_#EC4176] bg-white/5 text-white text-xxs sm:text-xs shadow-transparent outline-0 transition">
-                                <option @selected(!request('sort')) value="" class="text-dark">умолчанию</option>
-                                <option @selected(request('sort') === 'price') value="price" class="text-dark">от
-                                    дешевых к дорогим
-                                </option>
-                                <option @selected(request('sort') === '-price') value="-price" class="text-dark">от
-                                    дорогих к дешевым
-                                </option>
-                                <option @selected(request('sort') === 'title') value="title" class="text-dark">
-                                    наименованию
-                                </option>
-                            </select>
-                        </form>
+                    <div x-data="{sort: '{{ filter_url($category, ['sort' => request('sort')]) }}'}"
+                         class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <span class="text-body text-xxs sm:text-xs !leading-5">Сортировать</span>
+
+                        <select
+                                name="sort"
+                                x-model="sort"
+                                x-on:change="window.location = sort"
+                                class="form-select w-full h-12 px-4 rounded-lg border border-body/10 focus:border-pink focus:shadow-[0_0_0_3px_#EC4176] bg-white/5 text-white text-xxs sm:text-xs shadow-transparent outline-0 transition">
+
+                            <option @selected(!request('sort'))
+                                    value="{{ filter_url($category, ['sort' => '']) }}"
+                                    class="text-dark">
+                                по умолчанию
+                            </option>
+
+                            <option @selected(request('sort') === 'price')
+                                    value="{{ filter_url($category, ['sort' => 'price']) }}"
+                                    class="text-dark">
+                                от дешевых к дорогим
+                            </option>
+
+                            <option @selected(request('sort') === '-price')
+                                    value="{{ filter_url($category, ['sort' => '-price']) }}"
+                                    class="text-dark">
+                                от дорогих к дешевым
+                            </option>
+
+                            <option @selected(request('sort') === 'title')
+                                    value="{{ filter_url($category, ['sort' => 'title']) }}"
+                                    class="text-dark">
+                                по наименованию
+                            </option>
+                        </select>
                     </div>
                 </div>
 
                 <!-- Products list -->
-                <div class="products grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 2xl:gap-x-8 gap-y-8 lg:gap-y-10 2xl:gap-y-12">
-                    @each('client.catalog.shared.product', $products, 'product')
+                <div class="products grid @if(is_catalog_view('list')) grid-cols-1 gap-y-8 @else grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 2xl:gap-x-8 gap-y-8 lg:gap-y-10 2xl:gap-y-12 @endif">
+                    @each('client.catalog.shared.product' . (is_catalog_view('list') ? '-list' : ''), $products, 'product')
                 </div>
 
                 <!-- Page pagination -->

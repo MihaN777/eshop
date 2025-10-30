@@ -4,12 +4,13 @@ use App\Http\Controllers\Client\CatalogController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController;
 use App\Http\Controllers\Client\ProfileController;
+use App\Http\Middleware\CatalogViewMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 
 // Каталог
-Route::get('/catalog/{category:slug?}', CatalogController::class)->name('catalog');
+Route::get('/catalog/{category:slug?}', CatalogController::class)->name('catalog')->middleware([CatalogViewMiddleware::class]);
 Route::get('/product/{product:slug}', ProductController::class)->name('product');
 
 // Профиль
