@@ -21,8 +21,8 @@ class Product extends Model
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
     use HasSlug;
-    use WithFilters;
     use WithSorting;
+    use WithFilters;
 
     protected $fillable = [
         'slug',
