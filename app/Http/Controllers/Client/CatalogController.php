@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
@@ -17,11 +15,6 @@ class CatalogController extends Controller
         // TODO включить sort в запрос с фильтрами
         // $uri = request()->getRequestUri();
         // $queryStr = substr($uri, strpos($uri, '?'));
-
-        $brands = Brand::query()
-            ->select(['id', 'title'])
-            ->has('products')
-            ->get();
 
         $categories = Category::query()
             ->select(['id', 'slug', 'title'])
@@ -47,7 +40,6 @@ class CatalogController extends Controller
 
         return view('client.catalog.index', compact(
             'category',
-            'brands',
             'categories',
             'products',
         ));

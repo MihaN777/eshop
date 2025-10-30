@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Support\Casts\PriceCast;
 use App\Support\Traits\Models\HasSlug;
-use Illuminate\Database\Eloquent\Builder;
+use App\Support\Traits\Models\WithFilters;
+use App\Support\Traits\Models\WithSorting;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,9 +14,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Laravel\Scout\Attributes\SearchUsingFullText;
-use Laravel\Scout\Attributes\SearchUsingPrefix;
-use Laravel\Scout\Searchable;
 use Throwable;
 
 class Product extends Model
@@ -22,8 +21,8 @@ class Product extends Model
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
     use HasSlug;
-
-    // use Searchable;
+    use WithFilters;
+    use WithSorting;
 
     protected $fillable = [
         'slug',
@@ -39,18 +38,6 @@ class Product extends Model
         'price' => PriceCast::class,
     ];
 
-    // Поля для поиска через Laravel Scout
-    //    #[SearchUsingPrefix(['id'])] // Поиск в рамках WHERE LIKE
-    //    #[SearchUsingFullText(['title', 'text'])] // Поиск в рамках FULLTEXT
-    //    public function toSearchableArray(): array
-    //    {
-    //        return [
-    //            'id' => $this->id,
-    //            'title' => $this->title,
-    //            'text' => $this->text,
-    //        ];
-    //    }
-
     // Scopes
 
     public function scopeHomePage(Builder $query)
@@ -58,30 +45,6 @@ class Product extends Model
         $query->where('on_home_page', true)
             ->orderBy('sorting')
             ->limit(8);
-    }
-
-    public function scopeFiltered(Builder $query)
-    {
-        $query->when(request('filters.brands'), function (Builder $q) {
-            $q->whereIn('brand_id', request('filters.brands'));
-        })->when(request('filters.price'), function (Builder $q) {
-            $q->whereBetween('price', [
-                request('filters.price.from', 0),
-                request('filters.price.to', 100000)
-            ]);
-        });
-    }
-
-    public function scopeSorted(Builder $query)
-    {
-        $query->when(request('sort'), function (Builder $q) {
-            $column = request()->str('sort');
-
-            if ($column->contains(['price', 'title'])) {
-                $direction = $column->contains('-') ? 'DESC' : 'ASC';
-                $q->orderBy((string)$column->remove('-'), $direction);
-            }
-        });
     }
 
     // Отношения
