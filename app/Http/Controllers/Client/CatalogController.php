@@ -12,10 +12,6 @@ class CatalogController extends Controller
 {
     public function __invoke(?Category $category): View
     {
-        // TODO включить sort в запрос с фильтрами
-        // $uri = request()->getRequestUri();
-        // $queryStr = substr($uri, strpos($uri, '?'));
-
         $categories = Category::query()
             ->select(['id', 'slug', 'title'])
             ->has('products')
