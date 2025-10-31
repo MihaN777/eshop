@@ -7,11 +7,13 @@ use Illuminate\Pipeline\Pipeline;
 
 trait WithFilters
 {
-    public function scopeFiltered(Builder $query): void
+    public function scopeFiltered(Builder $query): Builder
     {
         foreach (filters() as $filter) {
             $query = $filter->apply($query);
         }
+
+        return $query;
 
         // Пропустить $query через pipeline и вернуть сформированый с учетом фильтров запрос
         // return app(Pipeline::class)

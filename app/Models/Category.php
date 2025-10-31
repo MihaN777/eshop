@@ -23,9 +23,9 @@ class Category extends Model
 
     // Scopes
 
-    public function scopeHomePage(Builder $query): void
+    public function scopeHomePage(Builder $query): Builder
     {
-        $query->where('on_home_page', true)
+        return $query->where('on_home_page', true)
             ->orderBy('sorting')
             ->limit(10);
     }

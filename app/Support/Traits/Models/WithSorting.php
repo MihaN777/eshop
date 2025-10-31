@@ -6,8 +6,8 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 
 trait WithSorting
 {
-    public function scopeSorted(Builder $query): void
+    public function scopeSorted(Builder $query): Builder
     {
-        sorter()->run($query);
+        return sorter()->run($query);
     }
 }
