@@ -10,7 +10,7 @@ class ProductController extends Controller
 {
     public function __invoke(Product $product): View
     {
-        return view('client.product', compact(
+        return view('client.product.product', compact(
             'product',
         ));
     }

@@ -24,7 +24,7 @@ class HomeController extends Controller
             ->homePage()
             ->get();
 
-        return view('client.index', compact(
+        return view('client.home', compact(
             'brands',
             'categories',
             'products'

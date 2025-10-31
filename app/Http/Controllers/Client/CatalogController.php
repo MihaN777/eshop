@@ -34,7 +34,7 @@ class CatalogController extends Controller
             ->sorted()
             ->paginate(6);
 
-        return view('client.catalog.index', compact(
+        return view('client.catalog.catalog', compact(
             'category',
             'categories',
             'products',
