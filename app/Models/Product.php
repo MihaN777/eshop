@@ -40,7 +40,7 @@ class Product extends Model
 
     // Scopes
 
-    public function scopeHomePage(Builder $query)
+    public function scopeHomePage(Builder $query): void
     {
         $query->where('on_home_page', true)
             ->orderBy('sorting')

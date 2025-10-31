@@ -25,7 +25,9 @@ class Brand extends Model
         'sorting',
     ];
 
-    public function scopeHomePage(Builder $query)
+    // Scopes
+
+    public function scopeHomePage(Builder $query): void
     {
         $query->where('on_home_page', true)
             ->orderBy('sorting')
