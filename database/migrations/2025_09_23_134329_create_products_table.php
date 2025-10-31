@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('title');
             $table->text('text')->nullable();
             $table->unsignedInteger('price')->index();
+            $table->json('json_properties')->nullable();
             $table->boolean('on_home_page')->default(false);
             $table->integer('sorting')->default(999);
             $table->fullText(['title', 'text']);

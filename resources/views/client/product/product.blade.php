@@ -61,20 +61,12 @@
                     <div class="text-body text-md md:text-lg font-bold line-through">{{ $product->price }}</div>
                 </div>
                 <ul class="sm:max-w-[360px] space-y-2 mt-8">
-                    <li class="flex justify-between text-body"><strong class="text-white">Вес (г):</strong> 92
-                    </li>
-                    <li class="flex justify-between text-body"><strong class="text-white">Тип сенсора:</strong>
-                        Оптический
-                    </li>
-                    <li class="flex justify-between text-body"><strong class="text-white">DPI мыши:</strong>
-                        18000
-                    </li>
-                    <li class="flex justify-between text-body"><strong class="text-white">Количество кнопок
-                            мыши:</strong> 8
-                    </li>
-                    <li class="flex justify-between text-body"><strong class="text-white">Подсветка:</strong>
-                        RGB
-                    </li>
+                    @foreach($product->properties as $property)
+                        <li class="flex justify-between text-body">
+                            <strong class="text-white">{{ $property->title }}</strong>
+                            {{ $property->pivot->value }}
+                        </li>
+                    @endforeach
                 </ul>
 
                 <!-- Add to cart -->
@@ -133,7 +125,7 @@
     <section class="mt-12 xl:mt-16 pt-8 lg:pt-12 border-t border-white/10">
         <h2 class="mb-12 text-lg lg:text-[42px] font-black">Описание</h2>
         <article class="text-xs md:text-sm">
-           {!! $product->text !!}
+            {!! $product->text !!}
         </article>
     </section>
 
