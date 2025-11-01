@@ -11,7 +11,7 @@ Route::get('/', HomeController::class)->name('home');
 
 // Каталог
 Route::get('/catalog/{category:slug?}', CatalogController::class)->name('catalog')->middleware([CatalogViewMiddleware::class]);
-Route::get('/product/{product:slug}', ProductController::class)->name('product');
+Route::get('/product/{product:slug?}', ProductController::class)->name('product');
 
 // Профиль
 Route::middleware(['auth', 'verified'])->group(function () {
