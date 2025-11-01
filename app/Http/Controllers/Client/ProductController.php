@@ -16,9 +16,25 @@ class ProductController extends Controller
             return [$item->option->title => $item];
         });
 
+        // Просмотренные товары
+        $alsoProducts = null;
+
+        if (session()->has('also')) {
+            $also = collect(session()->get('also'))
+                ->except($product->id)
+                ->reverse()
+                ->slice(0, 4);
+
+            if ($also->isNotEmpty()) $alsoProducts = Product::query()->whereIn('id', $also->toArray())->limit(4)->get();
+        }
+
+        // Запоминание просмотренных товаров
+        session()->put('also.' . $product->id, $product->id);
+
         return view('client.product.product', compact(
             'product',
             'options',
+            'alsoProducts',
         ));
     }
 }
