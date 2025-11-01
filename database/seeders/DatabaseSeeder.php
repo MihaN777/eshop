@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Image;
+use App\Models\Option;
+use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\Property;
 use Illuminate\Database\Seeder;
@@ -22,12 +24,15 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         Brand::factory(5)->create();
+        Option::factory(2)->create();
 
+        $optionValues = OptionValue::factory(10)->create();
         $properties = Property::factory(10)->create();
 
         Category::factory(5)
             ->has(Product::factory(rand(5, 10))
                 ->has(Image::factory(1))
+                ->hasAttached($optionValues)
                 ->hasAttached($properties, function () {
                     return ['value' => ucfirst(fake()->word())];
                 })

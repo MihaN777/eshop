@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('option_value_product', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('option_value_id')
+                ->index()
+                ->constrained('option_values')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
+
+            $table->foreignId('product_id')
+                ->index()
+                ->constrained('products')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
+
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        if (app()->isLocal()) {
+            Schema::dropIfExists('option_value_product');
+        }
+    }
+};

@@ -72,26 +72,23 @@
                 <!-- Add to cart -->
                 <form class="space-y-8 mt-8">
                     <div class="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        <div class="flex flex-col gap-2">
-                            <label for="filter-item-1"
-                                   class="cursor-pointer text-body text-xxs font-medium">Цвет</label>
-                            <select id="filter-item-1"
-                                    class="form-select w-full h-12 px-4 rounded-lg border border-body/10 focus:border-pink focus:shadow-[0_0_0_3px_#EC4176] bg-white/5 text-white text-xs shadow-transparent outline-0 transition">
-                                <option value="Белый" class="text-dark">Белый</option>
-                                <option value="Чёрный" class="text-dark">Чёрный</option>
-                                <option value="Синий" class="text-dark">Синий</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <label for="filter-item-2" class="cursor-pointer text-body text-xxs font-medium">Размер
-                                (хват)</label>
-                            <select id="filter-item-2"
-                                    class="form-select w-full h-12 px-4 rounded-lg border border-body/10 focus:border-pink focus:shadow-[0_0_0_3px_#EC4176] bg-white/5 text-white text-xs shadow-transparent outline-0 transition">
-                                <option value="Маленький" class="text-dark">Маленький</option>
-                                <option value="Средний" class="text-dark">Средний</option>
-                                <option value="Большой" class="text-dark">Большой</option>
-                            </select>
-                        </div>
+                        @foreach($options as $option => $values)
+                            <div class="flex flex-col gap-2">
+                                <label for="filter-item-1"
+                                       class="cursor-pointer text-body text-xxs font-medium">
+                                    {{ $option }}
+                                </label>
+
+                                <select id="filter-item-1"
+                                        class="form-select w-full h-12 px-4 rounded-lg border border-body/10 focus:border-pink focus:shadow-[0_0_0_3px_#EC4176] bg-white/5 text-white text-xs shadow-transparent outline-0 transition">
+
+                                    @foreach($values as $value)
+                                        <option value="{{ $value->id }}" class="text-dark">{{ $value->title }}</option>
+                                    @endforeach
+
+                                </select>
+                            </div>
+                        @endforeach
                     </div>
                     <div class="flex flex-wrap items-center gap-3 xs:gap-4">
                         <div class="flex items-stretch h-[54px] lg:h-[72px] gap-2">

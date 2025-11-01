@@ -65,6 +65,11 @@ class Product extends Model
             ->withPivot('value');
     }
 
+    public function optionValues(): BelongsToMany
+    {
+        return $this->belongsToMany(OptionValue::class, 'option_value_product', 'product_id', 'option_value_id');
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(Image::class);
