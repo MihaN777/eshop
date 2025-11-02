@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Brand;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class BrandObserver implements ShouldHandleEventsAfterCommit
@@ -13,7 +14,7 @@ class BrandObserver implements ShouldHandleEventsAfterCommit
      */
     public function created(Brand $brand): void
     {
-        //
+        Cache::forget('home-page.brands');
     }
 
     /**
@@ -21,7 +22,7 @@ class BrandObserver implements ShouldHandleEventsAfterCommit
      */
     public function updated(Brand $brand): void
     {
-        //
+        Cache::forget('home-page.brands');
     }
 
     /**
@@ -30,6 +31,8 @@ class BrandObserver implements ShouldHandleEventsAfterCommit
      */
     public function deleted(Brand $brand): void
     {
+        Cache::forget('home-page.brands');
+
         $msgExists = "Не существует файл для удаления: {$brand->image}";
         $msgDelete = "Не удалось удалить файл: {$brand->image}";
 
@@ -51,7 +54,7 @@ class BrandObserver implements ShouldHandleEventsAfterCommit
      */
     public function restored(Brand $brand): void
     {
-        //
+        Cache::forget('home-page.brands');
     }
 
     /**
@@ -59,6 +62,6 @@ class BrandObserver implements ShouldHandleEventsAfterCommit
      */
     public function forceDeleted(Brand $brand): void
     {
-        //
+        Cache::forget('home-page.brands');
     }
 }

@@ -7,18 +7,23 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     public function __invoke(): View
     {
-        $brands = Brand::query()
-            ->homePage()
-            ->get();
+        $brands = Cache::rememberForever('home-page.brands', function () {
+            return Brand::query()
+                ->homePage()
+                ->get();
+        });
 
-        $categories = Category::query()
-            ->homePage()
-            ->get();
+        $categories = Cache::rememberForever('home-page.categories', function () {
+            return Category::query()
+                ->homePage()
+                ->get();
+        });
 
         $products = Product::query()
             ->homePage()

@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Image;
 use App\Models\Product;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class TestCommand extends Command
@@ -38,6 +40,11 @@ class TestCommand extends Command
 //        $product->deleteWithRelations();
 //
 //        DB::commit();
+
+        Category::create([
+            'title' => 'Test Category',
+            'on_home_page' => true,
+        ]);
 
         return self::SUCCESS;
     }

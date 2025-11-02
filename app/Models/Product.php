@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Observers\ProductObserver;
 use App\Support\Casts\PriceCast;
 use App\Support\Traits\Models\HasSlug;
 use App\Support\Traits\Models\WithFilters;
 use App\Support\Traits\Models\WithSorting;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
+#[ObservedBy([ProductObserver::class])]
 class Product extends Model
 {
     /** @use HasFactory<\Database\Factories\ProductFactory> */
