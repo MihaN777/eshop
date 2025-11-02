@@ -1,19 +1,20 @@
 <div class="product-card flex flex-col md:flex-row rounded-3xl bg-card">
-    <a href="{{ route('product', $product) }}" class="product-card-photo overflow-hidden shrink-0 md:w-[260px] xl:w-[320px] h-[320px] md:h-full rounded-3xl">
-        <img src="{{ asset($product->storagePreviewImage()) }}" class="object-cover w-full h-full" alt="SteelSeries Aerox 3 Snow">
+    <a href="{{ route('product', $product) }}"
+       class="product-card-photo overflow-hidden shrink-0 md:w-[260px] xl:w-[320px] h-[320px] md:h-full rounded-3xl">
+        <img src="{{ asset($product->storagePreviewImage()) }}" class="object-cover w-full h-full"
+             alt="SteelSeries Aerox 3 Snow">
     </a>
 
     <div class="grow flex flex-col py-8 px-6 md:px-8">
         <h3 class="text-sm lg:text-md font-black">
-            <a href="{{ route('product', $product) }}" class="inline-block text-white hover:text-pink">{{ $product->title }}</a>
+            <a href="{{ route('product', $product) }}"
+               class="inline-block text-white hover:text-pink">{{ $product->title }}</a>
         </h3>
 
         <ul class="space-y-1 mt-4 text-xxs">
-            <li class="flex justify-between text-body"><strong>Вес (г):</strong> 92</li>
-            <li class="flex justify-between text-body"><strong>Тип сенсора:</strong> Оптический</li>
-            <li class="flex justify-between text-body"><strong>DPI мыши:</strong> 18000</li>
-            <li class="flex justify-between text-body"><strong>Количество кнопок мыши:</strong> 8</li>
-            <li class="flex justify-between text-body"><strong>Подсветка:</strong> RGB</li>
+            @foreach($product->json_properties as $property => $value)
+                <li class="flex justify-between text-body"><strong>{{ $property }}</strong> {{ $value }}</li>
+            @endforeach
         </ul>
 
         <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 mt-6">

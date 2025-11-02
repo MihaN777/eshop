@@ -32,6 +32,7 @@ class Product extends Model
         'title',
         'text',
         'price',
+        'json_properties',
         'on_home_page',
         'sorting',
         'brand_id',
@@ -39,6 +40,7 @@ class Product extends Model
 
     protected $casts = [
         'price' => PriceCast::class,
+        'json_properties' => 'array',
     ];
 
     // Scopes

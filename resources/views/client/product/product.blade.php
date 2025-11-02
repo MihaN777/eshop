@@ -60,11 +60,12 @@
                     <div class="text-pink text-lg md:text-xl font-black">{{ $product->price }}</div>
                     <div class="text-body text-md md:text-lg font-bold line-through">{{ $product->price }}</div>
                 </div>
+
                 <ul class="sm:max-w-[360px] space-y-2 mt-8">
-                    @foreach($product->properties as $property)
+                    @foreach($product->json_properties as $property => $value)
                         <li class="flex justify-between text-body">
-                            <strong class="text-white">{{ $property->title }}</strong>
-                            {{ $property->pivot->value }}
+                            <strong class="text-white">{{ $property }}</strong>
+                            {{ $value }}
                         </li>
                     @endforeach
                 </ul>
@@ -90,6 +91,7 @@
                             </div>
                         @endforeach
                     </div>
+
                     <div class="flex flex-wrap items-center gap-3 xs:gap-4">
                         <div class="flex items-stretch h-[54px] lg:h-[72px] gap-2">
                             <button type="button"

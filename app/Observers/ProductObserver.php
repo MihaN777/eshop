@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\ProductJsonPropertiesJob;
 use App\Models\Product;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 
@@ -12,7 +13,7 @@ class ProductObserver implements ShouldHandleEventsAfterCommit
      */
     public function created(Product $product): void
     {
-        //
+        $this->SetJsonProperties($product);
     }
 
     /**
@@ -20,7 +21,7 @@ class ProductObserver implements ShouldHandleEventsAfterCommit
      */
     public function updated(Product $product): void
     {
-        //
+        $this->SetJsonProperties($product);
     }
 
     /**
@@ -45,5 +46,11 @@ class ProductObserver implements ShouldHandleEventsAfterCommit
     public function forceDeleted(Product $product): void
     {
         //
+    }
+
+    public function SetJsonProperties(Product $product): void
+    {
+        ProductJsonPropertiesJob::dispatch($product)
+            ->delay(now()->addSeconds(10)); // Отложенка для сидов
     }
 }
