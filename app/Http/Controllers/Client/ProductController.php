@@ -17,7 +17,7 @@ class ProductController extends Controller
         });
 
         // Просмотренные товары
-        $alsoProducts = null;
+        $alsoProducts = collect();
 
         if (session()->has('also')) {
             $also = collect(session()->get('also'))

@@ -127,7 +127,7 @@
     </section>
 
     <!-- Watched products  -->
-    @if($alsoProducts)
+    @if($alsoProducts->isNotEmpty())
         <section class="mt-16 xl:mt-24">
             <h2 class="mb-12 text-lg lg:text-[42px] font-black">Просмотренные товары</h2>
             <!-- Products list -->
