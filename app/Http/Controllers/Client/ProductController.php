@@ -10,7 +10,10 @@ class ProductController extends Controller
 {
     public function __invoke(Product $product): View
     {
-        $product->load(['optionValues.option']);
+        $product->load([
+            'properties',
+            'optionValues.option',
+        ]);
 
         $options = $product->optionValues->mapToGroups(function ($item) {
             return [$item->option->title => $item];
