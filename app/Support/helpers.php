@@ -1,9 +1,9 @@
 <?php
 
-use App\Filters\FilterManager;
 use App\Models\Category;
-use App\Sorters\Sorter;
+use App\Support\Filters\FilterManager;
 use App\Support\Flash\Flash;
+use App\Support\Sorters\Sorter;
 
 if (!function_exists('flash')) {
     function flash(): Flash

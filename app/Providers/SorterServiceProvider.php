@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Sorters\Sorter;
+use App\Support\Sorters\Sorter;
 use Illuminate\Support\ServiceProvider;
 
 class SorterServiceProvider extends ServiceProvider

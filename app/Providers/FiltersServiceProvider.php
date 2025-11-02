@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Filters\BrandFilter;
-use App\Filters\FilterManager;
 use App\Filters\PriceFilter;
+use App\Support\Filters\FilterManager;
 use Illuminate\Support\ServiceProvider;
 
 class FiltersServiceProvider extends ServiceProvider

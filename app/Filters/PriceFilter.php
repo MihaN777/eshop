@@ -2,6 +2,7 @@
 
 namespace App\Filters;
 
+use App\Support\Filters\AbstractFilter;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class PriceFilter extends AbstractFilter

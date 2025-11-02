@@ -3,6 +3,7 @@
 namespace App\Filters;
 
 use App\Models\Brand;
+use App\Support\Filters\AbstractFilter;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class BrandFilter extends AbstractFilter

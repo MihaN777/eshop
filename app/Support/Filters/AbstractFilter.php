@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filters;
+namespace App\Support\Filters;
 
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Stringable;

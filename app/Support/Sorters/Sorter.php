@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Sorters;
+namespace App\Support\Sorters;
 
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Stringable;
