@@ -13,7 +13,15 @@ Route::get('/', HomeController::class)->name('home');
 // Каталог
 Route::get('/catalog/{category:slug?}', CatalogController::class)->name('catalog')->middleware([CatalogViewMiddleware::class]);
 Route::get('/product/{product:slug}', ProductController::class)->name('product');
-Route::get('/cart', CartController::class)->name('cart');
+
+// Корзина
+Route::prefix('cart')->group(function () {
+    Route::get('/', [CartController::class, 'cart'])->name('cart');
+    Route::post('/add/{product}', [CartController::class, 'add'])->name('cart.add');
+    Route::patch('/quantity/{item}', [CartController::class, 'quantity'])->name('cart.quantity');
+    Route::delete('/delete/{item}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::delete('/truncate', [CartController::class, 'truncate'])->name('cart.truncate');
+});
 
 // Профиль
 Route::middleware(['auth', 'verified'])->group(function () {
