@@ -31,7 +31,7 @@ class ProductController extends Controller
         // Запоминание просмотренных товаров
         session()->put('also.' . $product->id, $product->id);
 
-        return view('client.product.product', compact(
+        return view('client.product', compact(
             'product',
             'options',
             'alsoProducts',
