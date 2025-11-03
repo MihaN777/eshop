@@ -12,7 +12,8 @@
         "laravel/scout": "^10.20",
         "laravel/socialite": "^5.23",
         "laravel/telescope": "^5.11",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "spatie/laravel-view-models": "^1.6"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.16",
