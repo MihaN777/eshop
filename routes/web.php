@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CatalogController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController;
@@ -12,6 +13,7 @@ Route::get('/', HomeController::class)->name('home');
 // Каталог
 Route::get('/catalog/{category:slug?}', CatalogController::class)->name('catalog')->middleware([CatalogViewMiddleware::class]);
 Route::get('/product/{product:slug}', ProductController::class)->name('product');
+Route::get('/cart', CartController::class)->name('cart');
 
 // Профиль
 Route::middleware(['auth', 'verified'])->group(function () {
