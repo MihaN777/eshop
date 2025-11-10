@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Menu;
+namespace App\Domains\Main\Menu;
 
 use App\Support\Traits\Makeable;
 use Countable;

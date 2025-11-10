@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Menu\Menu;
-use App\Menu\MenuItem;
+use App\Domains\Main\Menu\Menu;
+use App\Domains\Main\Menu\MenuItem;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
