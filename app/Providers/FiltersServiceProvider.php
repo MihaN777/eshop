@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Filters\BrandFilter;
-use App\Filters\PriceFilter;
+use App\Domains\Catalog\Filters\BrandFilter;
+use App\Domains\Catalog\Filters\PriceFilter;
 use App\Support\Filters\FilterManager;
 use Illuminate\Support\ServiceProvider;
 

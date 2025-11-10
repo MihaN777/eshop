@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filters;
+namespace App\Domains\Catalog\Filters;
 
 use App\Support\Filters\AbstractFilter;
 use Illuminate\Contracts\Database\Eloquent\Builder;
