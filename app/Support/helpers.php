@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Support\Cart\CartManager;
 use App\Support\Filters\FilterManager;
 use App\Support\Flash\Flash;
 use App\Support\Sorters\Sorter;
@@ -23,6 +24,13 @@ if (!function_exists('filters')) {
     function filters(): array
     {
         return app(FilterManager::class)->items();
+    }
+}
+
+if (!function_exists('cart')) {
+    function cart(): CartManager
+    {
+        return app(CartManager::class);
     }
 }
 
