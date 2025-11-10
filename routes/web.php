@@ -18,8 +18,8 @@ Route::get('/product/{product:slug}', ProductController::class)->name('product')
 Route::prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'cart'])->name('cart');
     Route::post('/add/{product}', [CartController::class, 'add'])->name('cart.add');
-    Route::patch('/quantity/{item}', [CartController::class, 'quantity'])->name('cart.quantity');
-    Route::delete('/delete/{item}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::patch('/quantity/{cart_item}', [CartController::class, 'quantity'])->name('cart.quantity');
+    Route::delete('/delete/{cart_item}', [CartController::class, 'delete'])->name('cart.delete');
     Route::delete('/truncate', [CartController::class, 'truncate'])->name('cart.truncate');
 });
 
