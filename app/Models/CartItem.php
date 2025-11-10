@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Casts\PriceCast;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -16,6 +17,10 @@ class CartItem extends Model
         'option_values',
     ];
 
+    protected $casts = [
+        'price' => PriceCast::class,
+    ];
+
     // Отношения
 
     public function cart(): BelongsTo
@@ -23,7 +28,8 @@ class CartItem extends Model
         return $this->belongsTo(Cart::class);
     }
 
-    public function product(): BelongsTo {
+    public function product(): BelongsTo
+    {
         return $this->belongsTo(Product::class);
     }
 
