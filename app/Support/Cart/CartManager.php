@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
+// TODO добавить events для событий корзины
+
 class CartManager
 {
     public function __construct(
