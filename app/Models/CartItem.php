@@ -46,7 +46,7 @@ class CartItem extends Model
     {
         return Attribute::make(
             get: fn() => Price::make(
-                $this->price->row() * $this->quantity
+                $this->price->raw() * $this->quantity
             )
         );
     }

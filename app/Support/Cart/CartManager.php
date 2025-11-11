@@ -7,10 +7,12 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Support\Cart\Contracts\CartIdentityStorageContract;
 use App\Support\ValueObjects\Price;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class CartManager
 {
@@ -20,7 +22,7 @@ class CartManager
     {
     }
 
-    private function storageDta(string $id): array
+    private function storageData(string $id): array
     {
         $data = [
             'storage_id' => $id
@@ -54,22 +56,31 @@ class CartManager
     {
         DB::beginTransaction();
 
-        $cart = Cart::query()->updateOrCreate([
-            'storage_id' => $this->identityStorage->get(),
-        ], $this->storageDta($this->identityStorage->get()));
+        try {
+            $cart = Cart::query()->updateOrCreate([
+                'storage_id' => $this->identityStorage->get(),
+            ], $this->storageData($this->identityStorage->get()));
 
-        $cartItem = CartItem::query()->updateOrCreate([
-            'product_id' => $product->getKey(),
-            'string_option_values' => $this->stringedOptionValues($optionValues),
-        ], [
-            'price' => $product->price,
-            'quantity' => DB::raw("quantity + $quantity"),
-            'string_option_values' => $this->stringedOptionValues($optionValues),
-        ]);
+            $cartItem = $cart->cartItems()->updateOrCreate([
+                'product_id' => $product->getKey(),
+                'string_option_values' => $this->stringedOptionValues($optionValues),
+            ], [
+                'price' => $product->price,
 
-        $cartItem->optionValues()->sync($optionValues);
+                // TODO Fix DB::raw
+                // 'quantity' => 10,
+                'quantity' => DB::raw("quantity + $quantity"),
 
-        DB::commit();
+                'string_option_values' => $this->stringedOptionValues($optionValues),
+            ]);
+
+            $cartItem->optionValues()->sync($optionValues);
+
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw new Exception($e->getMessage());
+        }
 
         $this->forgetCache();
 
@@ -94,6 +105,18 @@ class CartManager
         $this->forgetCache();
     }
 
+    public function items(): Collection
+    {
+        $cart = $this->get();
+
+        if (!$cart) return collect();
+
+        return CartItem::query()
+            ->with(['product', 'optionValues.option'])
+            ->whereBelongsTo($cart)
+            ->get();
+    }
+
     public function cartItems(): Collection
     {
         return $this->get()?->cartItems ?? collect();
@@ -108,7 +131,7 @@ class CartManager
     {
         return Price::make(
             $this->cartItems()->sum(function ($item) {
-                return $item->amount->row();
+                return $item->amount->raw();
             })
         );
     }
@@ -120,7 +143,7 @@ class CartManager
                 ->with('cartItems')
                 ->where('storage_id', $this->identityStorage->get())
                 ->when(auth()->check(), fn(Builder $query) => $query->orWhere('user_id', auth()->id()))
-                ->first() ?? false;
+                ->first() ?? false; // False для сохранения в кеш (null не сохряняется)
         });
     }
 }
