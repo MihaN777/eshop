@@ -57,22 +57,30 @@ class CartManager
         DB::beginTransaction();
 
         try {
-            $cart = Cart::query()->updateOrCreate([
-                'storage_id' => $this->identityStorage->get(),
-            ], $this->storageData($this->identityStorage->get()));
+            $cart = Cart::query()
+                ->updateOrCreate([
+                    'storage_id' => $this->identityStorage->get(),
+                ], $this->storageData($this->identityStorage->get()));
 
-            $cartItem = $cart->cartItems()->updateOrCreate([
-                'product_id' => $product->getKey(),
-                'string_option_values' => $this->stringedOptionValues($optionValues),
-            ], [
-                'price' => $product->price,
+            $cartItem = CartItem::query()
+                ->where('cart_id', $cart->getKey())
+                ->where('product_id', $product->getKey())
+                ->where('string_option_values', $this->stringedOptionValues($optionValues))
+                ->first();
 
-                // TODO Fix DB::raw
-                // 'quantity' => 10,
-                'quantity' => DB::raw("quantity + $quantity"),
-
-                'string_option_values' => $this->stringedOptionValues($optionValues),
-            ]);
+            if ($cartItem) {
+                $cartItem->price = $product->price;
+                $cartItem->quantity += $quantity;
+                $cartItem->save();
+            } else {
+                $cartItem = CartItem::query()->create([
+                    'cart_id' => $cart->getKey(),
+                    'product_id' => $product->getKey(),
+                    'string_option_values' => $this->stringedOptionValues($optionValues),
+                    'price' => $product->price,
+                    'quantity' => $quantity,
+                ]);
+            }
 
             $cartItem->optionValues()->sync($optionValues);
 
