@@ -3,7 +3,7 @@
 use App\Models\Category;
 use App\Support\Cart\CartManager;
 use App\Support\Filters\FilterManager;
-use App\Support\Flash\Flash;
+use App\Support\Session\Flash\Flash;
 use App\Support\Sorters\Sorter;
 
 if (!function_exists('flash')) {

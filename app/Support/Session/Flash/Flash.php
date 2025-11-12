@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Flash;
+namespace App\Support\Session\Flash;
 
 use Illuminate\Contracts\Session\Session;
 
