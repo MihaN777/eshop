@@ -26,7 +26,7 @@ class CartController extends Controller
         try {
             cart()->add(
                 $product,
-                $request->get('quantity'),
+                $request->get('quantity', 1),
                 $request->get('options', [])
             );
         } catch (Throwable $e) {
