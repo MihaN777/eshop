@@ -159,6 +159,7 @@ class CartManager
 
     public function updateStorageId(string $oldId, string $newId): void
     {
+        // TODO Fix: крзина не должна перетекать от одного авторизованого пользователя к другому
         Cart::query()
             ->where('storage_id', $oldId)
             ->update($this->storedData($newId));
