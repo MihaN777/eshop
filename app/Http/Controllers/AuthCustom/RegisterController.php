@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AuthCustom;
 
+use App\Events\SessionRegenerated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthCustom\SignUpRequest;
 use App\Models\User;
@@ -21,6 +22,8 @@ class RegisterController extends Controller
     {
         $remember = $request->boolean('remember');
 
+        $oldId = request()->session()->getId();
+
         $user = User::query()->create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
@@ -29,6 +32,9 @@ class RegisterController extends Controller
 
         event(new Registered($user));
         auth()->login($user, $remember);
+
+        $newId = request()->session()->getId();
+        event(new SessionRegenerated($oldId, $newId));
 
         return redirect()->route('profile');
     }

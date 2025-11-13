@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AuthCustom;
 
+use App\Events\SessionRegenerated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthCustom\SignInRequest;
 use Illuminate\Contracts\View\View;
@@ -18,21 +19,33 @@ class LoginController extends Controller
     {
         $remember = $request->boolean('remember');
 
+        $oldId = request()->session()->getId();
+
         if (!auth()->attempt($request->validated(), $remember)) {
             return back()
                 ->withErrors(['email' => 'Учетные данные не верны.'])
                 ->onlyInput('email');
         }
 
-        $request->session()->regenerate();
+        request()->session()->regenerate();
+        $newId = request()->session()->getId();
+
+        event(new SessionRegenerated($oldId, $newId));
+
         return redirect()->intended(route('home'));
     }
 
     public function logout(): RedirectResponse
     {
+        $oldId = request()->session()->getId();
+
         auth()->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
+        $newId = request()->session()->getId();
+
+        event(new SessionRegenerated($oldId, $newId));
 
         return redirect()->route('home');
     }

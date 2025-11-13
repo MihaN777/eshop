@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AuthCustom;
 
+use App\Events\SessionRegenerated;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\Exceptions\ProjectException;
@@ -38,6 +39,8 @@ class SocialAuthController extends Controller
     {
         $this->isDriverSupported($driver);
 
+        $oldId = request()->session()->getId();
+
         try {
             $socialUser = Socialite::driver($driver)->user();
 
@@ -58,6 +61,11 @@ class SocialAuthController extends Controller
         }
 
         auth()->login($user);
+
+        request()->session()->regenerate();
+        $newId = request()->session()->getId();
+
+        event(new SessionRegenerated($oldId, $newId));
 
         return redirect()->intended(route('home'));
     }

@@ -24,7 +24,7 @@ class CartManager
     {
     }
 
-    private function storageData(string $id): array
+    private function storedData(string $id): array
     {
         $data = [
             'storage_id' => $id
@@ -62,7 +62,7 @@ class CartManager
             $cart = Cart::query()
                 ->updateOrCreate([
                     'storage_id' => $this->identityStorage->get(),
-                ], $this->storageData($this->identityStorage->get()));
+                ], $this->storedData($this->identityStorage->get()));
 
             $cartItem = CartItem::query()
                 ->where('cart_id', $cart->getKey())
@@ -155,5 +155,12 @@ class CartManager
                 ->when(auth()->check(), fn(Builder $query) => $query->orWhere('user_id', auth()->id()))
                 ->first() ?? false; // False для сохранения в кеш (null не сохряняется)
         });
+    }
+
+    public function updateStorageId(string $oldId, string $newId): void
+    {
+        Cart::query()
+            ->where('storage_id', $oldId)
+            ->update($this->storedData($newId));
     }
 }
