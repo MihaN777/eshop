@@ -149,8 +149,10 @@ class CartManager
         return Cache::remember($this->cacheKey(), now()->addHour(), function () {
             $authCheck = auth()->check();
 
+            // TODO Добавить expiration_at в таблицу cart, что бы не находились старые корзины по user_id
             return Cart::query()
                 ->with('cartItems')
+                // ->whereDate('expiration_at', '<=', now())
                 // ->where('storage_id', $this->identityStorage->get())
                 // ->when(auth()->check(), fn(Builder $query) => $query->orWhere('user_id', auth()->id()))
                 ->when(!$authCheck, fn(Builder $query) => $query->where('storage_id', $this->identityStorage->get()))
