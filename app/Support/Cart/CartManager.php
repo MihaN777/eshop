@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-// TODO добавить events для событий корзины
-
 class CartManager
 {
     public function __construct(
@@ -149,17 +147,21 @@ class CartManager
     public function get(): mixed
     {
         return Cache::remember($this->cacheKey(), now()->addHour(), function () {
+            $authCheck = auth()->check();
+
             return Cart::query()
                 ->with('cartItems')
-                ->where('storage_id', $this->identityStorage->get())
-                ->when(auth()->check(), fn(Builder $query) => $query->orWhere('user_id', auth()->id()))
+                // ->where('storage_id', $this->identityStorage->get())
+                // ->when(auth()->check(), fn(Builder $query) => $query->orWhere('user_id', auth()->id()))
+                ->when(!$authCheck, fn(Builder $query) => $query->where('storage_id', $this->identityStorage->get()))
+                ->when($authCheck, fn(Builder $query) => $query->where('user_id', auth()->id()))
+                ->latest('id')
                 ->first() ?? false; // False для сохранения в кеш (null не сохряняется)
         });
     }
 
     public function updateStorageId(string $oldId, string $newId): void
     {
-        // TODO Fix: крзина не должна перетекать от одного авторизованого пользователя к другому
         Cart::query()
             ->where('storage_id', $oldId)
             ->update($this->storedData($newId));
