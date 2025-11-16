@@ -56,7 +56,12 @@ class CartController extends Controller
 
     public function truncate(): RedirectResponse
     {
-        cart()->truncate();
+        try {
+            cart()->truncate();
+        } catch (Throwable $e) {
+            throw new ProjectException('Не удалось удалить корзину', $e->getMessage());
+        }
+
         flash()->info('Корзина очищена');
 
         return redirect()->intended(route('cart'));

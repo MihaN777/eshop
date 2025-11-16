@@ -52,6 +52,13 @@ class CartManager
         return implode(';', $optionValues);
     }
 
+    /**
+     * @param Product $product
+     * @param int $quantity
+     * @param array $optionValues
+     * @return Cart
+     * @throws Exception
+     */
     public function add(Product $product, int $quantity = 1, array $optionValues = []): Cart
     {
         DB::beginTransaction();
@@ -107,11 +114,29 @@ class CartManager
         $this->forgetCache();
     }
 
+
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function truncate(): void
     {
         $cart = $this->get();
 
-        if ($cart) $cart->delete();
+        if ($cart) {
+            DB::beginTransaction();
+
+            try {
+                foreach ($cart->cartItems as $cartItem) {
+                    $cartItem->delete();
+                }
+
+                DB::commit();
+            } catch (Throwable $e) {
+                DB::rollBack();
+                throw new Exception($e->getMessage());
+            }
+        }
 
         $this->forgetCache();
     }
@@ -156,7 +181,6 @@ class CartManager
         return Cache::remember($this->cacheKey(), now()->addHour(), function () {
             $authCheck = auth()->check();
 
-            // TODO Добавить expiration_at в таблицу cart, что бы не находились старые корзины по user_id
             return Cart::query()
                 ->with('cartItems')
                 // ->whereDate('expiration_at', '<=', now())
