@@ -10,7 +10,9 @@ class OrderController extends Controller
 {
     public function order(): View
     {
-        return view('client.order');
+        return view('client.order', [
+            'cartItems' => cart()->items(),
+        ]);
     }
 
     public function handle(): RedirectResponse
