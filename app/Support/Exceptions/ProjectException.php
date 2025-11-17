@@ -20,12 +20,15 @@ class ProjectException extends DomainException
     public function render(Request $request): Response|RedirectResponse
     {
         flash()->alert($this->getMessage());
-        return back();
+
+        return session()->previousUrl()
+            ? back()
+            : redirect()->route('home');
     }
 
     public function report(): void
     {
-        if(!empty($this->rawMessage)) {
+        if (!empty($this->rawMessage)) {
             logger()->error($this->rawMessage);
             logger()->channel('telegram')->error($this->rawMessage);
         }
