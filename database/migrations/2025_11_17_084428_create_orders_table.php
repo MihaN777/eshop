@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Order\Enums\OrderStatuses;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,6 +10,8 @@ return new class extends Migration {
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->enum('status', array_column(OrderStatuses::cases(), 'value'))
+                ->default(OrderStatuses::New->value);
 
             $table->foreignId('user_id')
                 ->index()
