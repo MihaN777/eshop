@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Domains\Order\Enums\OrderStatuses;
 use App\Support\Casts\PriceCast;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,11 +17,23 @@ class Order extends Model
         'delivery_type_id',
         'payment_method_id',
         'amount',
+        'status',
+    ];
+
+    protected $attributes = [
+        'status' => 'new',
     ];
 
     protected $casts = [
         'amount' => PriceCast::class,
     ];
+
+    public function status(): Attribute
+    {
+        return Attribute::make(
+            get: fn(string $value) => OrderStatuses::from($value)->createState($this)
+        );
+    }
 
     // Отношения
 
