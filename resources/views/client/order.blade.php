@@ -110,7 +110,6 @@
                                     name="password"
                                     type="password"
                                     placeholder="Придумайте пароль"
-                                    required="required"
                                     :isError="$errors->has('password')"
                                 />
 
@@ -124,7 +123,6 @@
                                     name="password_confirmation"
                                     type="password"
                                     placeholder="Повторите пароль"
-                                    required="required"
                                     :isError="$errors->has('password_confirmation')"
                                 />
 
