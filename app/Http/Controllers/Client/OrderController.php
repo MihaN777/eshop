@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\OrderHandleRequest;
 use App\Models\DeliveryType;
 use App\Models\PaymentMethod;
 use App\Support\Exceptions\ProjectException;
@@ -24,7 +25,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function handle(): RedirectResponse
+    public function handle(OrderHandleRequest $request): RedirectResponse
     {
         return redirect()->route('profile');
     }
