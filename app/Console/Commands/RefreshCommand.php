@@ -17,7 +17,13 @@ class RefreshCommand extends Command
         Storage::deleteDirectory('images/brands');
         Storage::deleteDirectory('images/products');
 
+        $this->info('Start refresh');
+
         $this->call('migrate:fresh', ['--seed' => true]);
+        $this->info('Waiting for queue work start...');
+        $this->call('queue:work', ['--max-time' => 15]);
+
+        $this->info('Refresh done');
 
         return self::SUCCESS;
     }
