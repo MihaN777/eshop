@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\User;
+use App\Support\Session\SessionRegenerator;
 
 class UserDeleteAction
 {
@@ -12,8 +13,7 @@ class UserDeleteAction
 
         if (!$user->delete()) return false;
 
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+        SessionRegenerator::run();
 
         return true;
     }

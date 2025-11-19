@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Client;
 
-use App\Actions\DTOs\UserUpdateDTO;
 use App\Actions\UserDeleteAction;
 use App\Actions\UserUpdateAction;
 use App\Http\Controllers\Controller;
@@ -21,7 +20,7 @@ class ProfileController extends Controller
 
     public function update(ProfileUpdateRequest $request, UserUpdateAction $action): RedirectResponse
     {
-        if(!$action(auth()->user(), UserUpdateDTO::fromRequest($request))) throw new ProjectException('Не удалось обновить профиль пользователя');
+        if (!$action(auth()->user(), (object)$request->validated())) throw new ProjectException('Не удалось обновить профиль пользователя');
         flash()->info('Профиль обновлен');
 
         return redirect()->route('profile');
@@ -29,7 +28,7 @@ class ProfileController extends Controller
 
     public function delete(ProfileDeleteRequest $request, UserDeleteAction $action): RedirectResponse
     {
-        if(!$action(auth()->user())) throw new ProjectException('Не удалось удалить профиль пользователя');
+        if (!$action(auth()->user())) throw new ProjectException('Не удалось удалить профиль пользователя');
         flash()->info('Ваш профиль был успешно удален');
 
         return redirect()->route('home');
