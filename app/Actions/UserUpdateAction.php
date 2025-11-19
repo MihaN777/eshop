@@ -2,11 +2,12 @@
 
 namespace App\Actions;
 
+use App\Actions\DTOs\UserUpdateDTO;
 use App\Models\User;
 
 class UserUpdateAction
 {
-    public function __invoke(User $user, object $dto): bool|User
+    public function __invoke(User $user, UserUpdateDTO $dto): bool|User
     {
         $data = [
             'name' => $dto->name,
