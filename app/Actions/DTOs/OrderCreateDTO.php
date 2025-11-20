@@ -10,11 +10,11 @@ final class OrderCreateDTO
     use Makeable;
 
     public function __construct(
-        public readonly array  $customer,
-        public readonly bool   $createAccount,
-        public readonly string $password,
-        public readonly string $deliveryTypeId,
-        public readonly string $paymentMethodId,
+        public readonly array   $customer,
+        public readonly bool    $createAccount,
+        public readonly ?string $password,
+        public readonly string  $deliveryTypeId,
+        public readonly string  $paymentMethodId,
     )
     {
     }
