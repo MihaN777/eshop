@@ -16,6 +16,7 @@ class ProductFactory extends Factory
             'title' => $this->faker->words(2, true),
             'text' => $this->faker->realText(),
             'price' => $this->faker->numberBetween(1000, 10000),
+            'quantity' => $this->faker->numberBetween(0, 20),
             'brand_id' => Brand::query()->inRandomOrder()->value('id'),
             'on_home_page' => $this->faker->boolean(),
             'sorting' => $this->faker->numberBetween(1, 999),

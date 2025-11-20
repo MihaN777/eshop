@@ -30,8 +30,9 @@ class Product extends Model
     protected $fillable = [
         'slug',
         'title',
-        'text',
         'price',
+        'quantity',
+        'text',
         'json_properties',
         'on_home_page',
         'sorting',
