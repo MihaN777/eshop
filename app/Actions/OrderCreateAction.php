@@ -26,7 +26,7 @@ class OrderCreateAction
         }
 
         return Order::query()->create([
-            'user_id' => $user?->id,
+            'user_id' => $user?->id ?? auth()->user()?->id,
             'delivery_type_id' => $dto->deliveryTypeId,
             'payment_method_id' => $dto->paymentMethodId,
         ]);
