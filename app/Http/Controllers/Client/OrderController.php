@@ -2,6 +2,15 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Actions\DTOs\OrderCreateDTO;
+use App\Actions\OrderCreateAction;
+use App\Domains\Order\Processes\AssignCustomerProcess;
+use App\Domains\Order\Processes\AssignProductsProcess;
+use App\Domains\Order\Processes\ChangeStateToPendingProcess;
+use App\Domains\Order\Processes\CheckProductQuantitiesProcess;
+use App\Domains\Order\Processes\ClearCartProcess;
+use App\Domains\Order\Processes\DecreaseProductsQuantitiesProcess;
+use App\Domains\Order\Processes\OrderProcess;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\OrderHandleRequest;
 use App\Models\DeliveryType;
@@ -25,8 +34,23 @@ class OrderController extends Controller
         ]);
     }
 
-    public function handle(OrderHandleRequest $request): RedirectResponse
+    public function handle(OrderHandleRequest $request, OrderCreateAction $action): RedirectResponse
     {
+        $dto = OrderCreateDTO::fromRequest($request);
+
+        $order = $action($dto);
+
+        (new OrderProcess($order))
+            ->processes([
+                new CheckProductQuantitiesProcess(),
+                new AssignCustomerProcess($dto),
+                new AssignProductsProcess(),
+                new ChangeStateToPendingProcess(),
+                new DecreaseProductsQuantitiesProcess(),
+                new ClearCartProcess(),
+            ])
+            ->run();
+
         return redirect()->route('profile');
     }
 }
