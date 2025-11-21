@@ -20,8 +20,7 @@ class RefreshCommand extends Command
         $this->info('Start refresh');
 
         $this->call('migrate:fresh', ['--seed' => true]);
-        $this->info('Waiting for queue work start...');
-        $this->call('queue:work', ['--max-time' => 15]);
+        $this->call('queue:work', ['--stop-when-empty' => true]);
 
         $this->info('Refresh done');
 

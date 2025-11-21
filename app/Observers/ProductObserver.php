@@ -50,7 +50,7 @@ class ProductObserver implements ShouldHandleEventsAfterCommit
 
     public function SetJsonProperties(Product $product): void
     {
-        ProductJsonPropertiesJob::dispatch($product)
-            ->delay(now()->addSeconds(10)); // Отложенка для сидов
+        ProductJsonPropertiesJob::dispatch($product);
+        // ->delay(now()->addSeconds(10)); // Отложенка для сидов
     }
 }
