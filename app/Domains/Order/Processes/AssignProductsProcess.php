@@ -9,8 +9,10 @@ class AssignProductsProcess implements OrderProcessContract
 {
     public function handle(Order $order, mixed $next): mixed
     {
+        $cart = cart();
+
         $order->orderItems()->createMany(
-            cart()->items()->map(
+            $cart->items()->map(
                 function ($item) {
                     return [
                         'product_id' => $item->product_id,
@@ -20,6 +22,9 @@ class AssignProductsProcess implements OrderProcessContract
                 }
             )->toArray()
         );
+
+        $order->amount = $cart->amount();
+        $order->save();
 
         return $next($order);
     }
