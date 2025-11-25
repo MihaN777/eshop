@@ -16,6 +16,8 @@ use App\Http\Requests\Client\OrderHandleRequest;
 use App\Models\DeliveryType;
 use App\Models\PaymentMethod;
 use App\Support\Exceptions\ProjectException;
+use App\Support\Payment\PaymentData;
+use App\Support\Payment\PaymentSystem;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -50,6 +52,24 @@ class OrderController extends Controller
                 new ClearCartProcess(),
             ])
             ->run();
+
+        // TODO реализовать оплату заказа через тестовую экваринг систему
+
+        if ($order->paymentMethod->redirect_to_pay) {
+            try {
+                $paymentUrl = PaymentSystem::create(new PaymentData(
+                    id: str()->uuid()->toString(),
+                    description: "Заказ пользователя: {$order->orderCustomer->last_name} {$order->orderCustomer->first_name}",
+                    returnUrl: route('payment.callback'),
+                    amount: $order->amount,
+                    meta: $order->orderItems
+                ))->url();
+            } catch (Throwable $e) {
+                throw new ProjectException('Ошибка формирования оплаты заказа', $e->getMessage());
+            }
+
+            return redirect($paymentUrl);
+        }
 
         return redirect()->route('profile');
     }

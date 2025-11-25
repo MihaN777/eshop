@@ -17,6 +17,7 @@ class AssignCustomerProcess implements OrderProcessContract
     public function handle(Order $order, mixed $next): mixed
     {
         $order->orderCustomer()->create($this->dto->customer);
+        $order->load(['orderCustomer']);
 
         return $next($order);
     }

@@ -23,6 +23,7 @@ class AssignProductsProcess implements OrderProcessContract
             )->toArray()
         );
 
+        $order->load(['orderItems.product']);
         $order->amount = $cart->amount();
         $order->save();
 
