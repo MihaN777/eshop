@@ -35,8 +35,6 @@ class PaymentServiceProvider extends ServiceProvider
         } catch (Throwable $e) {
             logger()->error($e->getMessage());
             logger()->channel('telegram')->error($e->getMessage());
-
-            abort(500);
         }
 
         PaymentSystem::onCreating(function (PaymentData $paymentData) {
