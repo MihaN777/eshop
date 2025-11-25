@@ -3,39 +3,51 @@
 @section('title', 'Профиль')
 
 @section('content')
-    <form action="{{ route('profile.update') }}" method="POST">
-        @csrf
-        @method('PATCH')
+    <section>
+        <div class="max-w-[640px] mt-12 mx-auto p-6 xs:p-8 md:p-12 2xl:p-16 rounded-[20px] bg-purple">
+            <h1 class="mb-5 text-lg lg:text-[42px] font-black text-center">Редактировать профиль</h1>
 
-        <div><input type="text" placeholder="Имя" style="color: black; margin-bottom:10px;" name="name"
-                    value="{{ old('name') ?? $authUser->name }}"></div>
-        @error('name')
-        <div style="color:red; padding:5px;">{{ $message }}</div>
-        @enderror
+            <form action="{{ route('profile.update') }}" method="POST" class="space-y-3">
+                @csrf
+                @method('PATCH')
 
-        <div><input type="email" placeholder="Email" style="color: black; margin-bottom:10px;" name="email"
-                    value="{{ old('email') ?? $authUser->email }}"></div>
-        @error('email')
-        <div style="color:red; padding:5px;">{{ $message }}</div>
-        @enderror
+                <input type="text" name="name"
+                       class="w-full h-14 px-4 rounded-lg border border-[#A07BF0] bg-white/20 focus:border-pink focus:shadow-[0_0_0_2px_#EC4176] outline-none transition text-white placeholder:text-white text-xxs md:text-xs font-semibold"
+                       value="{{ old('name') ?? $authUser->name }}" placeholder="Имя">
 
-        <button style="border:#2563eb solid 1px; padding:5px;" type="submit">Обновить</button>
-    </form>
+                @error('name')
+                <div style="color:red; padding:5px;">{{ $message }}</div>
+                @enderror
 
-    <form action="{{ route('profile.delete') }}" method="POST" style="margin-top:30px;">
-        @csrf
-        @method('DELETE')
+                <input type="email" name="email"
+                       class="w-full h-14 px-4 rounded-lg border border-[#A07BF0] bg-white/20 focus:border-pink focus:shadow-[0_0_0_2px_#EC4176] outline-none transition text-white placeholder:text-white text-xxs md:text-xs font-semibold"
+                       value="{{ old('email') ?? $authUser->email }}" placeholder="E-mail">
 
-        @if(!$authUser->isSocialRegistered())
-            <div>
-                <input type="password" name="password" placeholder="Текущий пароль" autocomplete="off"
-                        style="color: black; margin-bottom:10px;">
-            </div>
-            @error('password')
-            <div style="color:red; padding:5px;">{{ $message }}</div>
-            @enderror
-        @endif
+                @error('email')
+                <div style="color:red; padding:5px;">{{ $message }}</div>
+                @enderror
 
-        <button style="border:#eb2525 solid 1px; padding:5px;" type="submit">Удалить профиль</button>
-    </form>
+                <button type="submit" class="w-full btn btn-pink">Сохранить</button>
+            </form>
+
+            <h1 class="mt-5 mb-5 text-lg lg:text-[42px] font-black text-center">Удалить профиль</h1>
+
+            <form action="{{ route('profile.delete') }}" method="POST" class="space-y-3">
+                @csrf
+                @method('DELETE')
+
+                @if(!$authUser->isSocialRegistered())
+                    <input type="password" name="password"
+                           class="w-full h-14 px-4 rounded-lg border border-[#A07BF0] bg-white/20 focus:border-pink focus:shadow-[0_0_0_2px_#EC4176] outline-none transition text-white placeholder:text-white text-xxs md:text-xs font-semibold"
+                           placeholder="Текущий пароль" autocomplete="off" required>
+
+                    @error('password')
+                    <div style="color:red; padding:5px;">{{ $message }}</div>
+                    @enderror
+                @endif
+
+                <button type="submit" class="w-full btn btn-pink">Удалить</button>
+            </form>
+        </div>
+    </section>
 @endsection
