@@ -16,6 +16,7 @@ class Payment extends Model
         'payment_id',
         'payment_gateway',
         'meta',
+        'state',
     ];
 
     protected $casts = [

@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->uuid('payment_id');
             $table->string('payment_gateway');
+            $table->string('state');
             $table->json('meta')->nullable();
             $table->timestamps();
         });
