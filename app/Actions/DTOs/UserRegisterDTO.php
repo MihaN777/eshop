@@ -13,9 +13,9 @@ final class UserRegisterDTO
         public readonly string $name,
         public readonly string $email,
         public readonly string $password,
-        public readonly bool   $verifiedEmail,
-        public readonly bool   $loginUser,
-        public readonly bool   $rememberUser,
+        public readonly bool   $verified_email,
+        public readonly bool   $login_user,
+        public readonly bool   $remember_user,
     )
     {
     }
@@ -23,9 +23,9 @@ final class UserRegisterDTO
     public static function fromRequest(Request $request, bool $verifiedEmail = true, bool $loginUser = false, bool $rememberUser = false): self
     {
         $data = $request->only(['name', 'email', 'password']);
-        $data['verifiedEmail'] = $verifiedEmail;
-        $data['loginUser'] = $loginUser;
-        $data['rememberUser'] = $rememberUser;
+        $data['verified_email'] = $verifiedEmail;
+        $data['login_user'] = $loginUser;
+        $data['remember_user'] = $rememberUser;
 
         return self::make(...$data);
     }

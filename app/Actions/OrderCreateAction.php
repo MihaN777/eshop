@@ -20,9 +20,9 @@ class OrderCreateAction
                 $customerDto->first_name,
                 $customerDto->email,
                 $orderDto->password,
-                verifiedEmail: true,
-                loginUser: true,
-                rememberUser: false
+                verified_email: true,
+                login_user: true,
+                remember_user: false
             ));
         }
 

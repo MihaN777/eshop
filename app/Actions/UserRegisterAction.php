@@ -18,15 +18,15 @@ class UserRegisterAction
             'name' => $dto->name,
             'email' => $dto->email,
             'password' => Hash::make($dto->password),
-            'email_verified_at' => $dto->verifiedEmail ? now()->format('Y-m-d H:i:s') : null,
+            'email_verified_at' => $dto->verified_email ? now()->format('Y-m-d H:i:s') : null,
         ]);
 
-        if (!$dto->verifiedEmail) event(new Registered($user));
+        if (!$dto->verified_email) event(new Registered($user));
 
-        if ($dto->loginUser) {
+        if ($dto->login_user) {
             $oldId = request()->session()->getId();
 
-            auth()->login($user, $dto->rememberUser);
+            auth()->login($user, $dto->remember_user);
 
             $newId = request()->session()->getId();
             event(new SessionRegenerated($oldId, $newId));
