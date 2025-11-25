@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Actions\DTOs\OrderCreateDTO;
+use App\Actions\DTOs\OrderCustomerDTO;
 use App\Actions\OrderCreateAction;
 use App\Domains\Order\Processes\AssignCustomerProcess;
 use App\Domains\Order\Processes\AssignProductsProcess;
@@ -38,14 +39,16 @@ class OrderController extends Controller
 
     public function handle(OrderHandleRequest $request, OrderCreateAction $action): RedirectResponse
     {
-        $dto = OrderCreateDTO::fromRequest($request);
-
-        $order = $action($dto);
+        $order = $action(
+            OrderCreateDTO::make(...$request->only(['password', 'delivery_type_id', 'payment_method_id'])),
+            OrderCustomerDTO::fromArray($request->get('customer')),
+            $request->boolean('create_account')
+        );
 
         (new OrderProcess($order))
             ->processes([
                 new CheckProductQuantitiesProcess(),
-                new AssignCustomerProcess($dto),
+                new AssignCustomerProcess($request->get('customer')),
                 new AssignProductsProcess(),
                 new ChangeStateToPendingProcess(),
                 new DecreaseProductsQuantitiesProcess(),
@@ -68,7 +71,7 @@ class OrderController extends Controller
                 throw new ProjectException('Ошибка формирования оплаты заказа', $e->getMessage());
             }
 
-            return redirect($paymentUrl);
+            // return redirect($paymentUrl);
         }
 
         return redirect()->route('profile');

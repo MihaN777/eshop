@@ -3,22 +3,23 @@
 namespace App\Actions;
 
 use App\Actions\DTOs\OrderCreateDTO;
+use App\Actions\DTOs\OrderCustomerDTO;
 use App\Actions\DTOs\UserRegisterDTO;
 use App\Models\Order;
 
 class OrderCreateAction
 {
-    public function __invoke(OrderCreateDTO $dto): Order
+    public function __invoke(OrderCreateDTO $orderDto, OrderCustomerDTO $customerDto, bool $createAccount): Order
     {
         $user = null;
 
-        if ($dto->createAccount) {
+        if ($createAccount) {
             $userRegisterAction = new UserRegisterAction;
 
             $user = $userRegisterAction(new UserRegisterDTO(
-                $dto->customer['first_name'],
-                $dto->customer['email'],
-                $dto->password,
+                $customerDto->first_name,
+                $customerDto->email,
+                $orderDto->password,
                 verifiedEmail: true,
                 loginUser: true,
                 rememberUser: false
@@ -27,8 +28,8 @@ class OrderCreateAction
 
         return Order::query()->create([
             'user_id' => $user?->id ?? auth()->user()?->id,
-            'delivery_type_id' => $dto->deliveryTypeId,
-            'payment_method_id' => $dto->paymentMethodId,
+            'delivery_type_id' => $orderDto->delivery_type_id,
+            'payment_method_id' => $orderDto->payment_method_id,
         ]);
     }
 }
