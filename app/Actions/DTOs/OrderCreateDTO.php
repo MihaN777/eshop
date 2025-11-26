@@ -10,6 +10,7 @@ final class OrderCreateDTO
     use Makeable;
 
     public function __construct(
+        public readonly bool    $create_account,
         public readonly ?string $password,
         public readonly int     $delivery_type_id,
         public readonly int     $payment_method_id,
@@ -17,12 +18,13 @@ final class OrderCreateDTO
     {
     }
 
-    public static function fromRequest(Request $request): self
+    public static function fromArray(array $array): self
     {
         return self::make(...[
-            'password' => $request->get('password'),
-            'delivery_type_id' => (int)$request->get('delivery_type_id'),
-            'payment_method_id' => (int)$request->get('payment_method_id'),
+            'create_account' => isset($array['create_account']) ? (bool)$array['create_account'] : false,
+            'password' => $array['password'] ?? null,
+            'delivery_type_id' => (int)$array['delivery_type_id'],
+            'payment_method_id' => (int)$array['payment_method_id'],
         ]);
     }
 }

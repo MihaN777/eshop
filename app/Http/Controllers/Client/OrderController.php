@@ -40,9 +40,8 @@ class OrderController extends Controller
     public function handle(OrderHandleRequest $request, OrderCreateAction $action): RedirectResponse
     {
         $order = $action(
-            OrderCreateDTO::make(...$request->only(['password', 'delivery_type_id', 'payment_method_id'])),
-            OrderCustomerDTO::fromArray($request->get('customer')),
-            $request->boolean('create_account')
+            OrderCreateDTO::fromArray($request->only(['create_account', 'password', 'delivery_type_id', 'payment_method_id'])),
+            OrderCustomerDTO::fromArray($request->get('customer'))
         );
 
         (new OrderProcess($order))

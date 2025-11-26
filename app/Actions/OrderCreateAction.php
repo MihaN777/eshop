@@ -9,11 +9,11 @@ use App\Models\Order;
 
 class OrderCreateAction
 {
-    public function __invoke(OrderCreateDTO $orderDto, OrderCustomerDTO $customerDto, bool $createAccount): Order
+    public function __invoke(OrderCreateDTO $orderDto, OrderCustomerDTO $customerDto): Order
     {
         $user = null;
 
-        if ($createAccount) {
+        if ($orderDto->create_account) {
             $userRegisterAction = new UserRegisterAction;
 
             $user = $userRegisterAction(new UserRegisterDTO(
