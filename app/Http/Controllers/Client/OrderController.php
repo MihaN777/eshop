@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Actions\DTOs\OrderCreateDTO;
+use App\Actions\DTOs\OrderCustomerDTO;
 use App\Actions\DTOs\UserRegisterDTO;
 use App\Actions\OrderCreateAction;
 use App\Actions\UserRegisterAction;
@@ -41,13 +42,15 @@ class OrderController extends Controller
     public function handle(OrderHandleRequest $request, OrderCreateAction $orderCreateAction): RedirectResponse
     {
         // Создание пользователя и заказа
+        $customerDto = OrderCustomerDTO::fromArray($request->get('customer'));
+
         $user = null;
         if ($request->boolean('create_account')) {
             $userRegisterAction = new UserRegisterAction;
 
             $user = $userRegisterAction(new UserRegisterDTO(
-                $request->get('customer')['first_name'],
-                $request->get('customer')['email'],
+                $customerDto->fullName(),
+                $customerDto->email,
                 $request->get('password'),
                 verified_email: true,
                 login_user: true,
@@ -65,7 +68,7 @@ class OrderController extends Controller
         (new OrderProcess($order))
             ->processes([
                 new CheckProductQuantitiesProcess(),
-                new AssignCustomerProcess($request->get('customer')),
+                new AssignCustomerProcess($customerDto),
                 new AssignProductsProcess(),
                 new ChangeStateToPendingProcess(),
                 new DecreaseProductsQuantitiesProcess(),
