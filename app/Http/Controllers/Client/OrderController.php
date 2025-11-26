@@ -63,7 +63,7 @@ class OrderController extends Controller
                 $paymentUrl = PaymentSystem::create(new PaymentData(
                     id: str()->uuid()->toString(),
                     description: "Заказ пользователя: {$order->orderCustomer->last_name} {$order->orderCustomer->first_name}",
-                    returnUrl: route('payment.callback'),
+                    return_url: route('payment.callback'),
                     amount: $order->amount,
                     meta: $order->orderItems
                 ))->url();

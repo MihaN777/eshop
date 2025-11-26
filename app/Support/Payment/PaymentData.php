@@ -10,7 +10,7 @@ class PaymentData
     public function __construct(
         public string     $id,
         public string     $description,
-        public string     $returnUrl,
+        public string     $return_url,
         public Price      $amount,
         public Collection $meta
     )
