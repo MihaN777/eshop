@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Client;
 
 use App\Actions\DTOs\OrderCreateDTO;
-use App\Actions\DTOs\OrderCustomerDTO;
+use App\Actions\DTOs\UserRegisterDTO;
 use App\Actions\OrderCreateAction;
+use App\Actions\UserRegisterAction;
 use App\Domains\Order\Processes\AssignCustomerProcess;
 use App\Domains\Order\Processes\AssignProductsProcess;
 use App\Domains\Order\Processes\ChangeStateToPendingProcess;
@@ -37,13 +38,30 @@ class OrderController extends Controller
         ]);
     }
 
-    public function handle(OrderHandleRequest $request, OrderCreateAction $action): RedirectResponse
+    public function handle(OrderHandleRequest $request, OrderCreateAction $orderCreateAction): RedirectResponse
     {
-        $order = $action(
-            OrderCreateDTO::fromArray($request->only(['create_account', 'password', 'delivery_type_id', 'payment_method_id'])),
-            OrderCustomerDTO::fromArray($request->get('customer'))
-        );
+        // Создание пользователя и заказа
+        $user = null;
+        if ($request->boolean('create_account')) {
+            $userRegisterAction = new UserRegisterAction;
 
+            $user = $userRegisterAction(new UserRegisterDTO(
+                $request->get('customer')['first_name'],
+                $request->get('customer')['email'],
+                $request->get('password'),
+                verified_email: true,
+                login_user: true,
+                remember_user: false
+            ));
+        }
+
+        $order = $orderCreateAction(new OrderCreateDTO(
+            $user?->id ?? auth()->id(),
+            $request->get('delivery_type_id'),
+            $request->get('payment_method_id'),
+        ));
+
+        // Обработка заказа
         (new OrderProcess($order))
             ->processes([
                 new CheckProductQuantitiesProcess(),
