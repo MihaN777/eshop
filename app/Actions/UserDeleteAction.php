@@ -7,13 +7,13 @@ use App\Support\Session\SessionRegenerator;
 
 class UserDeleteAction
 {
-    public function __invoke(User $user): bool
+    public function __invoke(User $user, bool $authLogout): bool
     {
-        auth()->logout();
+        if ($authLogout) auth()->logout();
 
         if (!$user->delete()) return false;
 
-        SessionRegenerator::run();
+        if ($authLogout) SessionRegenerator::run();
 
         return true;
     }

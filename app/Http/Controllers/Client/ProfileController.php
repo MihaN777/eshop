@@ -29,7 +29,7 @@ class ProfileController extends Controller
 
     public function delete(ProfileDeleteRequest $request, UserDeleteAction $action): RedirectResponse
     {
-        if (!$action(auth()->user())) throw new ProjectException('Не удалось удалить профиль пользователя');
+        if (!$action(auth()->user(), true)) throw new ProjectException('Не удалось удалить профиль пользователя');
         flash()->info('Ваш профиль был успешно удален');
 
         return redirect()->route('home');
