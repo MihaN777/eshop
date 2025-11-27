@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\Payment;
 use App\Services\Payments\UnitPay;
-use App\Services\Payments\WebKassa;
 use App\Support\Payment\PaymentData;
 use App\Support\Payment\PaymentSystem;
 use Illuminate\Support\ServiceProvider;
@@ -27,8 +26,8 @@ class PaymentServiceProvider extends ServiceProvider
     {
         try {
             PaymentSystem::provider(function () {
-                if (request()->has('web_kassa'))
-                    return new WebKassa(config('payment.providers.web_kassa'));
+                // if (request()->has('web_kassa'))
+                //     return new WebKassa(config('payment.providers.web_kassa'));
 
                 return new UnitPay(config('payment.providers.unit_pay'));
             });
