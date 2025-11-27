@@ -9,6 +9,13 @@ return new class extends Migration {
     {
         Schema::create('payment_histories', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('payment_id')
+                ->index()
+                ->constrained('payments')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
+
             $table->string('payment_gateway');
             $table->string('method')->nullable();
             $table->json('payload')->nullable();
