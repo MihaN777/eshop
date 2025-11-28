@@ -16,10 +16,10 @@ class Payment extends Model
 
     protected $fillable = [
         'order_id',
-        'payment_id',
-        'payment_gateway',
-        'meta',
+        'pay_id',
+        'payment_provider',
         'state',
+        'meta',
     ];
 
     protected $casts = [
@@ -29,7 +29,7 @@ class Payment extends Model
 
     public function uniqueIds(): array
     {
-        return ['payment_id'];
+        return ['uuid'];
     }
 
     // Отношения

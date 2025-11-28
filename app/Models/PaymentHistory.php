@@ -9,7 +9,7 @@ class PaymentHistory extends Model
 {
     protected $fillable = [
         'payment_id',
-        'payment_gateway',
+        'payment_provider',
         'method',
         'payload',
     ];

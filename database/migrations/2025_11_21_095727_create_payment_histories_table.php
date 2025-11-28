@@ -16,7 +16,7 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->string('payment_gateway');
+            $table->string('payment_provider');
             $table->string('method')->nullable();
             $table->json('payload')->nullable();
             $table->timestamps();

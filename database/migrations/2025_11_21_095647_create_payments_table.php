@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
+            $table->uuid();
 
             $table->foreignId('order_id')
                 ->index()
@@ -16,8 +17,8 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->uuid('transaction_id');
-            $table->string('payment_gateway');
+            $table->string('pay_id')->index()->nullable();
+            $table->string('payment_provider');
             $table->string('state');
             $table->json('meta')->nullable();
             $table->timestamps();
