@@ -30,7 +30,7 @@ class SocialAuthController extends Controller
         } catch (Throwable $e) {
             throw new ProjectException(
                 'Произошла ошибка перенаправления на страницу авторизации',
-                "[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}"
+                $e->getMessage()
             );
         }
     }
@@ -56,7 +56,7 @@ class SocialAuthController extends Controller
         } catch (Throwable $e) {
             throw new ProjectException(
                 'Произошла ошибка авторизации через социальную сеть',
-                "[LINE {$e->getLine()}] {$e->getFile()} >>> {$e->getMessage()}"
+                $e->getMessage()
             );
         }
 
