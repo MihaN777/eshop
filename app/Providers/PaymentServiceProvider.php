@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Payment;
-use App\Services\Payments\UnitPay;
+use App\Services\Payments\YooKassa;
 use App\Support\Payment\PaymentData;
 use App\Support\Payment\PaymentSystem;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +16,7 @@ class PaymentServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // $this->app->singleton(PaymentSystem::class);
+        //
     }
 
     /**
@@ -26,10 +26,10 @@ class PaymentServiceProvider extends ServiceProvider
     {
         try {
             PaymentSystem::provider(function () {
-                // if (request()->has('web_kassa'))
-                //     return new WebKassa(config('payment.providers.web_kassa'));
+                // if (request()->has('unit_pay'))
+                //     return new UnitPay(config('payment.providers.unit_pay'));
 
-                return new UnitPay(config('payment.providers.unit_pay'));
+                return new YooKassa(config('payment.providers.yoo_kassa'));
             });
         } catch (Throwable $e) {
             logger()->error($e->getMessage());
