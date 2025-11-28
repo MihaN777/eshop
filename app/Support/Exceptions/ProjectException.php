@@ -29,8 +29,10 @@ class ProjectException extends DomainException
     public function report(): void
     {
         if (!empty($this->rawMessage)) {
-            logger()->error($this->rawMessage);
-            logger()->channel('telegram')->error($this->rawMessage);
+            $msg = "[LINE {$this->getLine()}] {$this->getFile()} >>> {$this->rawMessage}";
+
+            logger()->error($msg);
+            logger()->channel('telegram')->error($msg);
         }
     }
 }
