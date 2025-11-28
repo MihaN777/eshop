@@ -3,7 +3,7 @@
 return [
 
     'providers' => [
-        'web_kassa' => [
+        'yoo_kassa' => [
             'public_key' => '#####',
             'secret_key' => '#####',
         ],
