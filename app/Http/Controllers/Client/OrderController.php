@@ -76,12 +76,13 @@ class OrderController extends Controller
             ])
             ->run();
 
-        // TODO реализовать оплату заказа через тестовую экваринг систему
-
+        // Перенаправление на оплату
         if ($order->paymentMethod->redirect_to_pay) {
             try {
                 $paymentUrl = PaymentSystem::create(new PaymentData(
-                    id: str()->uuid()->toString(),
+                    order_id: $order->id,
+                    payment_id: null,
+                    payment_uuid: str()->orderedUuid()->toString(),
                     description: "Заказ пользователя: {$order->orderCustomer->last_name} {$order->orderCustomer->first_name}",
                     return_url: route('payment.callback'),
                     amount: $order->amount,

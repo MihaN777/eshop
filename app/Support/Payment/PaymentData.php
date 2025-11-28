@@ -8,12 +8,13 @@ use Illuminate\Support\Collection;
 final class PaymentData
 {
     public function __construct(
-        public readonly int        $order_id,
-        public readonly int        $payment_id,
-        public readonly string     $description,
-        public readonly string     $return_url,
-        public readonly Price      $amount,
-        public readonly Collection $meta
+        public int        $order_id,
+        public ?int       $payment_id,
+        public ?string    $payment_uuid,
+        public string     $description,
+        public string     $return_url,
+        public Price      $amount,
+        public Collection $meta
     )
     {
     }
@@ -23,9 +24,10 @@ final class PaymentData
         return collect([
             'order_id' => $this->order_id,
             'payment_id' => $this->payment_id,
+            'payment_uuid' => $this->payment_uuid,
             'description' => $this->description,
             'return_url' => $this->return_url,
-            'amount' => $this->amount,
+            'amount' => $this->amount->raw(),
             'meta' => $this->meta,
         ]);
     }

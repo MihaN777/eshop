@@ -5,7 +5,7 @@ namespace App\Support\Payment;
 use App\Domains\Order\States\Payment\PaidPaymentState;
 use App\Models\Payment;
 use App\Models\PaymentHistory;
-use App\Support\Payment\Contracts\PaymentGatewayContract;
+use App\Support\Payment\Contracts\PaymentProviderContract;
 use App\Support\Payment\Exceptions\PaymentProcessException;
 use App\Support\Payment\Exceptions\PaymentProviderException;
 use App\Support\Payment\Traits\PaymentEvents;
@@ -15,20 +15,20 @@ class PaymentSystem
 {
     use PaymentEvents;
 
-    public static PaymentGatewayContract $provider;
+    public static PaymentProviderContract $provider;
 
     /**
-     * @param PaymentGatewayContract|Closure $providerOrClosure
+     * @param PaymentProviderContract|Closure $providerOrClosure
      * @return void
      * @throws PaymentProviderException
      */
-    public static function provider(PaymentGatewayContract|Closure $providerOrClosure): void
+    public static function provider(PaymentProviderContract|Closure $providerOrClosure): void
     {
         if (is_callable($providerOrClosure)) {
             $providerOrClosure = call_user_func($providerOrClosure);
         }
 
-        if (!$providerOrClosure instanceof PaymentGatewayContract) {
+        if (!$providerOrClosure instanceof PaymentProviderContract) {
 
             throw PaymentProviderException::invalidProvider();
         }
@@ -38,20 +38,23 @@ class PaymentSystem
 
     /**
      * @param PaymentData $paymentData
-     * @return PaymentGatewayContract
+     * @return PaymentProviderContract
      * @throws PaymentProviderException
      */
-    public static function create(PaymentData $paymentData): PaymentGatewayContract
+    public static function create(PaymentData $paymentData): PaymentProviderContract
     {
-        if (!self::$provider instanceof PaymentGatewayContract) {
+        if (!self::$provider instanceof PaymentProviderContract) {
             throw PaymentProviderException::invalidProvider();
         }
 
-        Payment::query()->create([
-            'payment_id' => $paymentData->id,
-            'payment_gateway' => get_class(self::$provider),
+        $payment = Payment::query()->create([
+            'order_id' => $paymentData->order_id,
+            'payment_provider' => get_class(self::$provider),
             'meta' => $paymentData->meta->toJson(),
         ]);
+
+        $paymentData->payment_id = $payment->id;
+        $paymentData->payment_uuid = $payment->uuid;
 
         if (is_callable(self::$onCreating)) {
             $paymentData = call_user_func(self::$onCreating, $paymentData);
@@ -61,12 +64,12 @@ class PaymentSystem
     }
 
     /**
-     * @return PaymentGatewayContract
+     * @return PaymentProviderContract
      * @throws PaymentProviderException
      */
-    public static function validate(): PaymentGatewayContract
+    public static function validate(): PaymentProviderContract
     {
-        if (!self::$provider instanceof PaymentGatewayContract) {
+        if (!self::$provider instanceof PaymentProviderContract) {
             throw PaymentProviderException::invalidProvider();
         }
 

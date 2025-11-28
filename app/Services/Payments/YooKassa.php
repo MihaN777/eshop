@@ -2,25 +2,23 @@
 
 namespace App\Services\Payments;
 
-use App\Support\Payment\Contracts\PaymentGatewayContract;
+use App\Support\Payment\Contracts\PaymentProviderContract;
 use App\Support\Payment\PaymentData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
-class UnitPay implements PaymentGatewayContract
+class YooKassa implements PaymentProviderContract
 {
-    protected PaymentData $paymentData;
+    protected const API_URL = 'https://yookassa.ru/api';
+    protected const PAYMENT_URL = 'https://yookassa.ru/payment';
 
-    protected string $errorMessage = '';
+    protected PaymentData $paymentData;
+    protected ?object $paymentObject;
+    protected string $errorMessage;
 
     public function __construct(array $config = null)
     {
         if ($config) $this->configure($config);
-    }
-
-    public function paymentId(): string
-    {
-        return $this->paymentData->id;
     }
 
     public function configure(array $config): void
@@ -37,8 +35,10 @@ class UnitPay implements PaymentGatewayContract
 
     public function request(): mixed
     {
-        return json_decode('{"foo": "bar"}', true);
+        $response = Http::post(self::API_URL, $this->paymentData->toJson());
+        $this->paymentObject = $response->object();
 
+        return $this->paymentObject;
     }
 
     public function response(): JsonResponse
@@ -48,21 +48,24 @@ class UnitPay implements PaymentGatewayContract
         ]);
     }
 
+    public function paymentId(): string
+    {
+        return $this->paymentData->payment_id;
+    }
+
     public function url(): string
     {
-        return 'https://unit-pay.com/payment';
+        return self::PAYMENT_URL;
     }
 
     public function validate(): bool
     {
-        if (false) return false;
-
         return true;
     }
 
     public function paid(): bool
     {
-        return true;
+        return $this->paymentObject?->status === 'paid';
     }
 
     public function errorMessage(): string
