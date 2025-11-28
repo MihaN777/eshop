@@ -5,10 +5,8 @@ namespace App\Support\Payment\Contracts;
 use App\Support\Payment\PaymentData;
 use Illuminate\Http\JsonResponse;
 
-interface PaymentGatewayContract
+interface PaymentProviderContract
 {
-    public function paymentId(): string;
-
     public function configure(array $config): void;
 
     public function data(PaymentData $data): self;
@@ -16,6 +14,8 @@ interface PaymentGatewayContract
     public function request(): mixed;
 
     public function response(): JsonResponse;
+
+    public function paymentId(): string;
 
     public function url(): string;
 
