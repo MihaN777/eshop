@@ -23,6 +23,7 @@ use App\Support\Payment\PaymentData;
 use App\Support\Payment\PaymentSystem;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Throwable;
 
 class OrderController extends Controller
 {
@@ -83,7 +84,7 @@ class OrderController extends Controller
                     order_id: $order->id,
                     payment_id: null,
                     payment_uuid: str()->orderedUuid()->toString(),
-                    description: "Заказ пользователя: {$order->orderCustomer->last_name} {$order->orderCustomer->first_name}",
+                    description: "Заказ №{$order->id}",
                     return_url: route('payment.callback'),
                     amount: $order->amount,
                     meta: $order->orderItems
