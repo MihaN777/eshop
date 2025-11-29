@@ -29,7 +29,6 @@ class PaymentSystem
         }
 
         if (!$providerOrClosure instanceof PaymentProviderContract) {
-
             throw PaymentProviderException::invalidProvider();
         }
 
