@@ -7,6 +7,8 @@ use Illuminate\Http\JsonResponse;
 
 interface PaymentProviderContract
 {
+    public function paymentId(): string;
+
     public function configure(array $config): void;
 
     public function data(PaymentData $data): self;
@@ -14,8 +16,6 @@ interface PaymentProviderContract
     public function request(): mixed;
 
     public function response(): JsonResponse;
-
-    public function paymentId(): string;
 
     public function url(): string;
 

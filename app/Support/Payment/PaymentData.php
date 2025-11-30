@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 final class PaymentData
 {
     public function __construct(
-        public int        $order_id,
+        public ?int       $order_id,
         public ?int       $payment_id,
         public ?string    $payment_uuid,
         public string     $description,
