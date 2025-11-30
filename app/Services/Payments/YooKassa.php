@@ -23,8 +23,6 @@ final class YooKassa implements PaymentProviderContract
     protected PaymentData $paymentData;
     protected string $errorMessage;
 
-    // protected ?CreatePaymentResponse $paymentObject;
-
     public function __construct(array $config)
     {
         $this->client = new Client;
@@ -158,7 +156,7 @@ final class YooKassa implements PaymentProviderContract
                     'payment_mode' => 'full_payment',
                 ],
                 'tax_system_code' => 1,
-                'email' => $this->paymentData->meta->get('email'),
+                // 'email' => $this->paymentData->meta->get('email'),
             ],
             'metadata' => $this->paymentData->meta->toArray(),
         ];
