@@ -98,22 +98,22 @@ final class YooKassa implements PaymentProviderContract
      */
     public function validate(): bool
     {
-        $meta = $this->paymentObject()->getMetadata()->toArray();
+        $paymentObject = $this->paymentObject();
 
         $this->data(new PaymentData(
             order_id: null,
             payment_id: null,
-            payment_uuid: $this->paymentObject()->getId(),
-            description: $this->paymentObject()->getDescription(),
+            payment_uuid: $paymentObject->getId(),
+            description: $paymentObject->getDescription(),
             return_url: '',
             amount: Price::make(
-                $this->paymentObject()->getAmount()->getIntegerValue(),
-                $this->paymentObject()->getAmount()->getCurrency(),
+                $paymentObject->getAmount()->getIntegerValue(),
+                $paymentObject->getAmount()->getCurrency(),
             ),
-            meta: collect($meta)
+            meta: collect($paymentObject->getMetadata()->toArray())
         ));
 
-        return $this->paymentObject()->getStatus() === PaymentStatus::WAITING_FOR_CAPTURE;
+        return $paymentObject->getStatus() === PaymentStatus::WAITING_FOR_CAPTURE;
     }
 
     /**
