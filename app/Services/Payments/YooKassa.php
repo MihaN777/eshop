@@ -132,6 +132,20 @@ final class YooKassa implements PaymentProviderContract
 
     private function payload(): array
     {
+        $metadata = [];
+
+        foreach ($this->paymentData->meta as $item) {
+            $prepare = [];
+            $prepare = [
+                'product_id' => $item->product_id,
+                'title' => $item->product->title,
+                'price' => $item->price->value(),
+                'quantity' => $item->quantity,
+            ];
+
+            $metadata[] = $prepare;
+        }
+
         return [
             'amount' => [
                 'value' => $this->paymentData->amount->value(),
@@ -158,7 +172,7 @@ final class YooKassa implements PaymentProviderContract
                 'tax_system_code' => 1,
                 // 'email' => $this->paymentData->meta->get('email'),
             ],
-            'metadata' => $this->paymentData->meta->toArray(),
+            'metadata' => $metadata,
         ];
     }
 
