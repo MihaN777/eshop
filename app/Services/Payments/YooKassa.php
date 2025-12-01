@@ -21,7 +21,7 @@ final class YooKassa implements PaymentProviderContract
 {
     protected Client $client;
     protected PaymentData $paymentData;
-    protected string $errorMessage;
+    protected string $errorMessage = '';
 
     public function __construct(array $config)
     {
@@ -48,6 +48,9 @@ final class YooKassa implements PaymentProviderContract
 
     public function request(): mixed
     {
+        // $source = file_get_contents('php://input');
+        // $requestBody = json_decode($source, true);
+
         return json_decode(request()->getContent(), true);
     }
 
