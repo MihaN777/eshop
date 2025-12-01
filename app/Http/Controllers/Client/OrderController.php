@@ -14,16 +14,14 @@ use App\Domains\Order\Processes\CheckProductQuantitiesProcess;
 use App\Domains\Order\Processes\ClearCartProcess;
 use App\Domains\Order\Processes\DecreaseProductsQuantitiesProcess;
 use App\Domains\Order\Processes\OrderProcess;
+use App\Domains\Order\Processes\PaymentProcess;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\OrderHandleRequest;
 use App\Models\DeliveryType;
 use App\Models\PaymentMethod;
 use App\Support\Exceptions\ProjectException;
-use App\Support\Payment\PaymentData;
-use App\Support\Payment\PaymentSystem;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Throwable;
 
 class OrderController extends Controller
 {
@@ -74,27 +72,12 @@ class OrderController extends Controller
                 new ChangeStateToPendingProcess(),
                 new DecreaseProductsQuantitiesProcess(),
                 new ClearCartProcess(),
+                new PaymentProcess(),
             ])
             ->run();
 
         // Перенаправление на оплату
-        if ($order->paymentMethod->redirect_to_pay) {
-            try {
-                $paymentUrl = PaymentSystem::create(new PaymentData(
-                    order_id: $order->id,
-                    payment_id: null,
-                    payment_uuid: str()->orderedUuid()->toString(),
-                    description: "Заказ №{$order->id}",
-                    return_url: route('payment.callback'),
-                    amount: $order->amount,
-                    meta: $order->orderItems
-                ))->url();
-            } catch (Throwable $e) {
-                throw new ProjectException('Ошибка формирования оплаты заказа', $e->getMessage());
-            }
-
-            // return redirect($paymentUrl);
-        }
+        if ($order->payment_url) return redirect($order->payment_url);
 
         return redirect()->route('profile');
     }
