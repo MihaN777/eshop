@@ -73,7 +73,7 @@ class PaymentSystem
         }
 
         PaymentHistory::query()->create([
-            'payment_gateway' => get_class(self::$provider),
+            'payment_provider' => get_class(self::$provider),
             'method' => request()->method(),
             'payload' => self::$provider->request(),
         ]);

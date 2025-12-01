@@ -48,7 +48,7 @@ class PaymentServiceProvider extends ServiceProvider
             //
         });
 
-        PaymentSystem::onError(function (Payment $payment, string $message) {
+        PaymentSystem::onError(function (string $message) {
             //
         });
     }
