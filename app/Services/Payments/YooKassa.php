@@ -102,8 +102,8 @@ final class YooKassa implements PaymentProviderContract
 
         $this->data(new PaymentData(
             order_id: null,
-            payment_id: $this->paymentObject()->getId(),
-            payment_uuid: null,
+            payment_id: null,
+            payment_uuid: $this->paymentObject()->getId(),
             description: $this->paymentObject()->getDescription(),
             return_url: '',
             amount: Price::make(
@@ -155,7 +155,7 @@ final class YooKassa implements PaymentProviderContract
                 'type' => 'redirect',
                 'return_url' => $this->paymentData->return_url,
             ],
-            // 'capture' => true,
+            'capture' => true,
             'description' => $this->paymentData->description,
             'receipt' => [
                 'items' => [
