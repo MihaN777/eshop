@@ -7,11 +7,8 @@ use Closure;
 trait PaymentEvents
 {
     protected static Closure $onCreating;
-
     protected static Closure $onSuccess;
-
     protected static Closure $onValidating;
-
     protected static Closure $onError;
 
     public static function onCreating(Closure $event): void
