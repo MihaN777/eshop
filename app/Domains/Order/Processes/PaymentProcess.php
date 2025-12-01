@@ -26,12 +26,13 @@ class PaymentProcess implements OrderProcessContract
                     return_url: route('payment.callback'),
                     amount: $order->amount,
                     meta: $order->orderItems
-                ))->url();
+                ));
+                // ->url(); // TODO протестировать процес оплаты
             } catch (Throwable $e) {
                 throw new OrderProcessException($e->getMessage());
             }
 
-            $order->payment_url = $paymentUrl;
+            $order->payment_url = url('provider_pay'); //$paymentUrl;
         }
 
         return $next($order);
