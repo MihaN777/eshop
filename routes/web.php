@@ -32,7 +32,7 @@ Route::prefix('order')->group(function () {
 });
 
 // Оплата
-Route::post('/payment/callback', PaymentController::class)->name('payment.callback');
+Route::post('/payment/callback/{provider}', PaymentController::class)->name('payment.callback');
 
 // Профиль
 Route::middleware(['auth', 'verified'])->group(function () {
