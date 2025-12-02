@@ -23,7 +23,7 @@ class PaymentProcess implements OrderProcessContract
                 $paymentUrl = PaymentSystem::create(new PaymentData(
                     order_id: $order->id,
                     payment_id: null,
-                    payment_uuid: str()->orderedUuid()->toString(),
+                    transaction_id: null, // str()->orderedUuid()->toString()
                     description: "Заказ №{$order->id}",
                     return_url: route('catalog'),
                     amount: $order->amount,
