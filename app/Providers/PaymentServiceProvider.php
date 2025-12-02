@@ -25,7 +25,7 @@ class PaymentServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // try {
-        //     PaymentSystem::provider(function () {
+        //     PaymentSystem::setProvider(function () {
         //         // if (request()->has('unit_pay'))
         //         //     return new UnitPay(config('payment.providers.unit_pay'));
         //
