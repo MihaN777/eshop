@@ -23,5 +23,7 @@ interface PaymentProviderContract
 
     public function paid(): bool;
 
+    public function providerName(): string;
+
     public function errorMessage(): string;
 }
