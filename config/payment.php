@@ -1,15 +1,21 @@
 <?php
 
+use App\Services\Payments\UnitPay;
+use App\Services\Payments\YooKassa;
+
 return [
 
     'providers' => [
         'yoo_kassa' => [
-            'key' => env('YOOKASSA_KEY', ''),
-            'shop_id' => env('YOOKASSA_SHOP_ID', ''),
+            'class' => YooKassa::class,
+            'key' => env('PAYMENT_YOOKASSA_KEY', ''),
+            'shop_id' => env('PAYMENT_YOOKASSA_SHOP_ID', ''),
         ],
 
         'unit_pay' => [
-            'key' => '',
+            'class' => UnitPay::class,
+            'key' => env('PAYMENT_UNITPAY_KEY', ''),
+            'shop_id' => env('PAYMENT_UNITPAY_SHOP_ID', ''),
         ],
     ],
 
