@@ -2,35 +2,40 @@
 
 namespace App\Models;
 
-use App\Domains\Order\States\Payment\PaymentState;
+use App\Domains\Order\Enums\PaymentStatuses;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\ModelStates\HasStates;
 
 class Payment extends Model
 {
-    use HasUuids;
-    use HasStates;
+    // use HasUuids;
 
     protected $fillable = [
         'order_id',
-        'pay_id',
-        'payment_provider',
-        'state',
+        'transaction_id',
+        'provider',
+        'status',
         'meta',
     ];
 
     protected $casts = [
         'meta' => 'collection',
-        'state' => PaymentState::class,
     ];
 
-    public function uniqueIds(): array
+    public function status(): Attribute
     {
-        return ['uuid'];
+        return Attribute::make(
+            get: fn(string $value) => PaymentStatuses::from($value)->createState($this)
+        );
     }
+
+    // public function uniqueIds(): array
+    // {
+    //     return ['uuid'];
+    // }
 
     // Отношения
 
@@ -41,6 +46,6 @@ class Payment extends Model
 
     public function paymentHistories(): HasMany
     {
-        return $this->hasMany(PaymentHistory::class);
+        return $this->hasMany(PaymentHistory::class, 'transaction_id', 'transaction_id');
     }
 }

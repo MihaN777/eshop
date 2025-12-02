@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Order\Enums\PaymentStatuses;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,7 +10,7 @@ return new class extends Migration {
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->uuid();
+            // $table->uuid();
 
             $table->foreignId('order_id')
                 ->index()
@@ -17,9 +18,9 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->string('pay_id')->index()->nullable();
-            $table->string('payment_provider');
-            $table->string('state');
+            $table->string('transaction_id')->index()->nullable();
+            $table->string('provider');
+            $table->string('status')->default(PaymentStatuses::Pending->value);
             $table->json('meta')->nullable();
             $table->timestamps();
         });
