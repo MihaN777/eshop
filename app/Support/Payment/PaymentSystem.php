@@ -103,7 +103,7 @@ class PaymentSystem
             throw PaymentProviderException::invalidProvider();
         }
 
-        PaymentHistory::query()->create([
+        $paymentHistory = PaymentHistory::query()->create([
             'provider' => self::$provider->providerName(),
             'method' => request()->method(),
             'payload' => self::$provider->request(),
@@ -116,6 +116,9 @@ class PaymentSystem
         if (self::$provider->validate() && self::$provider->paid()) {
             try {
                 DB::beginTransaction();
+
+                $paymentHistory->transaction_id = self::$provider->transactionId();
+                $paymentHistory->save();
 
                 $payment = Payment::query()
                     ->with('order')
