@@ -32,7 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'payment/callback',
+            'payment/callback/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
