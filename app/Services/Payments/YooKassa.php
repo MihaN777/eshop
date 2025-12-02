@@ -106,7 +106,7 @@ final class YooKassa implements PaymentProviderContract
         $this->data(new PaymentData(
             order_id: null,
             payment_id: null,
-            payment_uuid: $paymentObject->getId(),
+            transaction_id: $paymentObject->getId(),
             description: $paymentObject->getDescription(),
             return_url: '',
             amount: Price::make(
@@ -126,6 +126,11 @@ final class YooKassa implements PaymentProviderContract
     public function paid(): bool
     {
         return $this->paymentObject()->getPaid();
+    }
+
+    public function providerName(): string
+    {
+        return str_replace(__NAMESPACE__ . '\\', '', self::class);
     }
 
     public function errorMessage(): string
