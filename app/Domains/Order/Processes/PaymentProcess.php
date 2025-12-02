@@ -18,12 +18,14 @@ class PaymentProcess implements OrderProcessContract
 
         if ($order->paymentMethod->redirect_to_pay) {
             try {
+                PaymentSystem::setProviderByName(request()->get('provider', 'yoo_kassa'));
+
                 $paymentUrl = PaymentSystem::create(new PaymentData(
                     order_id: $order->id,
                     payment_id: null,
                     payment_uuid: str()->orderedUuid()->toString(),
                     description: "Заказ №{$order->id}",
-                    return_url: route('payment.callback'),
+                    return_url: route('catalog'),
                     amount: $order->amount,
                     meta: $order->orderItems
                 ));
