@@ -2,18 +2,33 @@
 
 namespace App\Domains\Order\States\Payment;
 
-use Spatie\ModelStates\State;
-use Spatie\ModelStates\StateConfig;
+use App\Models\Payment;
+use InvalidArgumentException;
 
-abstract class PaymentState extends State
+abstract class PaymentState
 {
-    abstract public function color(): string;
+    protected array $allowedTransitions = [];
 
-    public static function config(): StateConfig
+    public function __construct(
+        protected Payment $payment
+    )
     {
-        return parent::config()
-            ->default(PendingPaymentState::class)
-            ->allowTransition(PendingPaymentState::class, PaidPaymentState::class)
-            ->allowTransition(PendingPaymentState::class, FailedPaymentState::class);
+    }
+
+    abstract public function value(): string;
+
+    abstract public function humanValue(): string;
+
+    abstract public function canBeChanged(): bool;
+
+    public function transitionTo(PaymentState $state): void
+    {
+        if (!$this->canBeChanged())
+            throw new InvalidArgumentException('Статус не может быть изменен');
+
+        if (!in_array(get_class($state), $this->allowedTransitions))
+            throw new InvalidArgumentException("Не возможно изменить статус {$this->payment->status->value()} в статус {$state->value()}");
+
+        $this->payment->updateQuietly(['status' => $state->value()]);
     }
 }

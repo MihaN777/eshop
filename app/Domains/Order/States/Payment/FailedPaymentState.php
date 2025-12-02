@@ -4,10 +4,22 @@ namespace App\Domains\Order\States\Payment;
 
 class FailedPaymentState extends PaymentState
 {
-    public static string $name = 'failed';
+    protected array $allowedTransitions = [
+        //
+    ];
 
-    public function color(): string
+    public function value(): string
     {
-        return 'red';
+        return 'failed';
+    }
+
+    public function humanValue(): string
+    {
+        return 'Ошибка';
+    }
+
+    public function canBeChanged(): bool
+    {
+        return false;
     }
 }

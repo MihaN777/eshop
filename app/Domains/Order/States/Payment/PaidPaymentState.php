@@ -4,10 +4,22 @@ namespace App\Domains\Order\States\Payment;
 
 class PaidPaymentState extends PaymentState
 {
-    public static string $name = 'paid';
+    protected array $allowedTransitions = [
+        //
+    ];
 
-    public function color(): string
+    public function value(): string
     {
-        return 'green';
+        return 'paid';
+    }
+
+    public function humanValue(): string
+    {
+        return 'Оплачен';
+    }
+
+    public function canBeChanged(): bool
+    {
+        return false;
     }
 }

@@ -4,10 +4,23 @@ namespace App\Domains\Order\States\Payment;
 
 class PendingPaymentState extends PaymentState
 {
-    public static string $name = 'pending';
+    protected array $allowedTransitions = [
+        PaidPaymentState::class,
+        FailedPaymentState::class,
+    ];
 
-    public function color(): string
+    public function value(): string
     {
-        return 'grey';
+        return 'pending';
+    }
+
+    public function humanValue(): string
+    {
+        return 'В обработке';
+    }
+
+    public function canBeChanged(): bool
+    {
+        return true;
     }
 }
