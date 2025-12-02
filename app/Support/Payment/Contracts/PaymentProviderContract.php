@@ -7,7 +7,9 @@ use Illuminate\Http\JsonResponse;
 
 interface PaymentProviderContract
 {
-    public function paymentId(): string;
+    public function paymentId(): ?int;
+
+    public function transactionId(): ?string;
 
     public function configure(array $config): void;
 

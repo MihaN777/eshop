@@ -2,6 +2,7 @@
 
 namespace App\Support\Payment;
 
+use App\Domains\Order\States\PaidOrderState;
 use App\Domains\Order\States\Payment\PaidPaymentState;
 use App\Models\Payment;
 use App\Models\PaymentHistory;
@@ -10,6 +11,7 @@ use App\Support\Payment\Exceptions\PaymentProcessException;
 use App\Support\Payment\Exceptions\PaymentProviderException;
 use App\Support\Payment\Traits\PaymentEvents;
 use Closure;
+use Illuminate\Support\Facades\DB;
 
 class PaymentSystem
 {
@@ -18,11 +20,11 @@ class PaymentSystem
     public static PaymentProviderContract $provider;
 
     /**
-     * @param PaymentProviderContract|Closure $providerOrClosure
+     * @param PaymentProviderContract|Closure|null $providerOrClosure
      * @return void
      * @throws PaymentProviderException
      */
-    public static function provider(PaymentProviderContract|Closure $providerOrClosure): void
+    public static function setProvider(PaymentProviderContract|Closure|null $providerOrClosure): void
     {
         if (is_callable($providerOrClosure)) {
             $providerOrClosure = call_user_func($providerOrClosure);
@@ -33,6 +35,36 @@ class PaymentSystem
         }
 
         self::$provider = $providerOrClosure;
+    }
+
+    /**
+     * @param string $provider
+     * @return void
+     * @throws PaymentProviderException
+     */
+    public static function setProviderByName(string $provider): void
+    {
+        $provider = str($provider)
+            ->slug('_')
+            ->value();
+
+        $providers = config('payment.providers', []);
+
+        if (!array_key_exists($provider, $providers)) {
+            throw PaymentProviderException::invalidProvider();
+        }
+
+        $providerClass = isset($providers[$provider]['class']) && !empty($providers[$provider]['class'])
+            ? $providers[$provider]['class']
+            : null;
+
+        if (!class_exists($providerClass)) {
+            throw PaymentProviderException::invalidProvider();
+        }
+
+        $providerInstance = new $providerClass($providers[$provider]);
+
+        self::setProvider($providerInstance);
     }
 
     /**
@@ -48,12 +80,11 @@ class PaymentSystem
 
         $payment = Payment::query()->create([
             'order_id' => $paymentData->order_id,
-            'payment_provider' => get_class(self::$provider),
+            'provider' => self::$provider->providerName(),
             'meta' => $paymentData->meta->toJson(),
         ]);
 
         $paymentData->payment_id = $payment->id;
-        $paymentData->payment_uuid = $payment->uuid;
 
         if (is_callable(self::$onCreating)) {
             $paymentData = call_user_func(self::$onCreating, $paymentData);
@@ -73,7 +104,7 @@ class PaymentSystem
         }
 
         PaymentHistory::query()->create([
-            'payment_provider' => get_class(self::$provider),
+            'provider' => self::$provider->providerName(),
             'method' => request()->method(),
             'payload' => self::$provider->request(),
         ]);
@@ -84,20 +115,28 @@ class PaymentSystem
 
         if (self::$provider->validate() && self::$provider->paid()) {
             try {
+                DB::beginTransaction();
+
                 $payment = Payment::query()
-                    ->where('payment_id', self::$provider->paymentId())
+                    ->with('order')
+                    ->where('transaction_id', self::$provider->transactionId())
                     ->firstOr(function () {
                         throw PaymentProcessException::paymentNotFound();
                     });
+                $order = $payment->order;
+
+                $payment->status->transitionTo(new PaidPaymentState($payment));
+                $order->status->transitionTo(new PaidOrderState($order));
+
+                DB::commit();
 
                 if (is_callable(self::$onSuccess)) {
                     call_user_func(self::$onSuccess, $payment);
                 }
 
-                $payment->state->transitionTo(PaidPaymentState::class);
-
             } catch (PaymentProcessException $e) {
                 // Order cancelled
+                DB::rollBack();
 
                 if (is_callable(self::$onError)) {
                     call_user_func(

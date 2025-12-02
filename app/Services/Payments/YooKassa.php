@@ -29,9 +29,14 @@ final class YooKassa implements PaymentProviderContract
         $this->configure($config);
     }
 
-    public function paymentId(): string
+    public function paymentId(): ?int
     {
         return $this->paymentData->payment_id;
+    }
+
+    public function transactionId(): ?string
+    {
+        return $this->paymentData->transaction_id;
     }
 
     public function configure(array $config): void
