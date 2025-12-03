@@ -9,7 +9,6 @@ final class PaymentData
 {
     public function __construct(
         public ?int       $order_id,
-        public ?int       $payment_id,
         public ?string    $transaction_id,
         public string     $description,
         public string     $return_url,
@@ -23,7 +22,6 @@ final class PaymentData
     {
         return collect([
             'order_id' => $this->order_id,
-            'payment_id' => $this->payment_id,
             'transaction_id' => $this->transaction_id,
             'description' => $this->description,
             'return_url' => $this->return_url,

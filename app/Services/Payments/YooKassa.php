@@ -20,18 +20,20 @@ use YooKassa\Request\Payments\PaymentResponse;
 final class YooKassa implements PaymentProviderContract
 {
     protected Client $client;
-    protected PaymentData $paymentData;
-    protected string $errorMessage = '';
+    protected ?PaymentData $paymentData;
+    protected ?string $paymentUrl;
+    protected ?string $expireAt;
+    protected string $errorMessage;
 
     public function __construct(array $config)
     {
         $this->client = new Client;
-        $this->configure($config);
-    }
+        $this->paymentData = null;
+        $this->paymentUrl = null;
+        $this->expireAt = null;
+        $this->errorMessage = '';
 
-    public function paymentId(): ?int
-    {
-        return $this->paymentData->payment_id;
+        $this->configure($config);
     }
 
     public function transactionId(): ?string
@@ -44,23 +46,72 @@ final class YooKassa implements PaymentProviderContract
         $this->client->setAuth($config['shop_id'], $config['key']);
     }
 
-    public function data(PaymentData $data): self
+    public function setData(PaymentData $data): self
     {
         $this->paymentData = $data;
 
         return $this;
     }
 
-    public function request(): mixed
+    public function getData(): PaymentData
     {
-        // $source = file_get_contents('php://input');
-        // $requestBody = json_decode($source, true);
-
-        return json_decode(request()->getContent(), true);
+        return $this->paymentData;
     }
 
     /**
-     * @return JsonResponse
+     * @throws PaymentProviderException
+     */
+    public function create(): void
+    {
+        try {
+            $response = $this->client->createPayment(
+                $this->payload(),
+                $this->idempotenceKey()
+            );
+
+            $this->paymentData->transaction_id = $response->getId();
+            $this->paymentUrl = $response->getConfirmation()->getConfirmationUrl();
+        } catch (Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+            throw new PaymentProviderException($e->getMessage());
+        }
+    }
+
+    /**
+     * @throws PaymentProviderException
+     */
+    public function update(): void
+    {
+        $paymentObject = $this->paymentObject();
+
+        $this->setData(new PaymentData(
+            order_id: null,
+            transaction_id: $paymentObject->getId(),
+            description: $paymentObject->getDescription(),
+            return_url: '',
+            amount: Price::make(
+                $paymentObject->getAmount()->getIntegerValue(),
+                $paymentObject->getAmount()->getCurrency(),
+            ),
+            meta: collect($paymentObject->getMetadata()->toArray())
+        ));
+    }
+
+    public function requestRaw(): string
+    {
+        $requestBody = request()->getContent(); // file_get_contents('php://input');
+
+        if (!is_string($requestBody)) $requestBody = '';
+
+        return $requestBody;
+    }
+
+    public function request(): mixed
+    {
+        return json_decode($this->requestRaw(), true);
+    }
+
+    /**
      * @throws PaymentProviderException
      */
     public function response(): JsonResponse
@@ -80,52 +131,14 @@ final class YooKassa implements PaymentProviderContract
     }
 
     /**
-     * @return string
-     * @throws PaymentProviderException
-     */
-    public function url(): string
-    {
-        try {
-            $response = $this->client->createPayment(
-                $this->payload(),
-                $this->idempotenceKey()
-            );
-
-            return $response
-                ->getConfirmation()
-                ->getConfirmationUrl();
-        } catch (Throwable $e) {
-            $this->errorMessage = $e->getMessage();
-            throw new PaymentProviderException($e->getMessage());
-        }
-    }
-
-    /**
-     * @return bool
      * @throws PaymentProviderException
      */
     public function validate(): bool
     {
-        $paymentObject = $this->paymentObject();
-
-        $this->data(new PaymentData(
-            order_id: null,
-            payment_id: null,
-            transaction_id: $paymentObject->getId(),
-            description: $paymentObject->getDescription(),
-            return_url: '',
-            amount: Price::make(
-                $paymentObject->getAmount()->getIntegerValue(),
-                $paymentObject->getAmount()->getCurrency(),
-            ),
-            meta: collect($paymentObject->getMetadata()->toArray())
-        ));
-
-        return $paymentObject->getStatus() === PaymentStatus::WAITING_FOR_CAPTURE;
+        return $this->paymentObject()->getStatus() === PaymentStatus::WAITING_FOR_CAPTURE;
     }
 
     /**
-     * @return bool
      * @throws PaymentProviderException
      */
     public function paid(): bool
@@ -133,9 +146,14 @@ final class YooKassa implements PaymentProviderContract
         return $this->paymentObject()->getPaid();
     }
 
-    public function providerName(): string
+    public function paymentUrl(): ?string
     {
-        return str_replace(__NAMESPACE__ . '\\', '', self::class);
+        return $this->paymentUrl;
+    }
+
+    public function expireAt(): ?string
+    {
+        return $this->expireAt;
     }
 
     public function errorMessage(): string
@@ -143,20 +161,40 @@ final class YooKassa implements PaymentProviderContract
         return $this->errorMessage;
     }
 
+    public function providerName(): string
+    {
+        return str_replace(__NAMESPACE__ . '\\', '', self::class);
+    }
+
+    /**
+     * @throws PaymentProviderException
+     */
+    private function paymentObject(): PaymentResponse|PaymentInterface
+    {
+        $request = $this->request();
+
+        try {
+            $notification = ($request['event'] === NotificationEventType::PAYMENT_SUCCEEDED)
+                ? new NotificationSucceeded($request)
+                : new NotificationWaitingForCapture($request);
+        } catch (Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+            throw new PaymentProviderException($e->getMessage());
+        }
+
+        return $notification->getObject();
+    }
+
     private function payload(): array
     {
         $metadata = [];
-
         foreach ($this->paymentData->meta as $item) {
-            $prepare = [];
-            $prepare = [
+            $metadata[] = [
                 'product_id' => $item->product_id,
                 'title' => $item->product->title,
                 'price' => $item->price->value(),
                 'quantity' => $item->quantity,
             ];
-
-            $metadata[] = $prepare;
         }
 
         return [
@@ -187,26 +225,6 @@ final class YooKassa implements PaymentProviderContract
             ],
             'metadata' => $metadata,
         ];
-    }
-
-    /**
-     * @return PaymentResponse|PaymentInterface
-     * @throws PaymentProviderException
-     */
-    private function paymentObject(): PaymentResponse|PaymentInterface
-    {
-        $request = $this->request();
-
-        try {
-            $notification = ($request['event'] === NotificationEventType::PAYMENT_SUCCEEDED)
-                ? new NotificationSucceeded($request)
-                : new NotificationWaitingForCapture($request);
-        } catch (Throwable $e) {
-            $this->errorMessage = $e->getMessage();
-            throw new PaymentProviderException($e->getMessage());
-        }
-
-        return $notification->getObject();
     }
 
     private function idempotenceKey(): string

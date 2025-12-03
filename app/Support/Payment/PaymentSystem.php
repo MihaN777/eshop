@@ -4,6 +4,7 @@ namespace App\Support\Payment;
 
 use App\Domains\Order\States\PaidOrderState;
 use App\Domains\Order\States\Payment\PaidPaymentState;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentHistory;
 use App\Support\Payment\Contracts\PaymentProviderContract;
@@ -12,16 +13,15 @@ use App\Support\Payment\Exceptions\PaymentProviderException;
 use App\Support\Payment\Traits\PaymentEvents;
 use Closure;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class PaymentSystem
 {
     use PaymentEvents;
 
-    public static PaymentProviderContract $provider;
+    public static ?PaymentProviderContract $provider = null;
 
     /**
-     * @param PaymentProviderContract|Closure|null $providerOrClosure
-     * @return void
      * @throws PaymentProviderException
      */
     public static function setProvider(PaymentProviderContract|Closure|null $providerOrClosure): void
@@ -38,8 +38,6 @@ class PaymentSystem
     }
 
     /**
-     * @param string $provider
-     * @return void
      * @throws PaymentProviderException
      */
     public static function setProviderByName(string $provider): void
@@ -68,33 +66,61 @@ class PaymentSystem
     }
 
     /**
-     * @param PaymentData $paymentData
-     * @return PaymentProviderContract
+     * @throws PaymentProcessException
      * @throws PaymentProviderException
      */
-    public static function create(PaymentData $paymentData): PaymentProviderContract
+    public static function create(Order $order): PaymentProviderContract
     {
         if (!self::$provider instanceof PaymentProviderContract) {
             throw PaymentProviderException::invalidProvider();
         }
 
-        $payment = Payment::query()->create([
-            'order_id' => $paymentData->order_id,
-            'provider' => self::$provider->providerName(),
-            'meta' => $paymentData->meta->toJson(),
-        ]);
-
-        $paymentData->payment_id = $payment->id;
+        $paymentData = new PaymentData(
+            order_id: $order->id,
+            transaction_id: null, // str()->orderedUuid()->toString()
+            description: "Заказ №{$order->id}",
+            return_url: route('catalog'),
+            amount: $order->amount,
+            meta: $order->orderItems
+        );
 
         if (is_callable(self::$onCreating)) {
             $paymentData = call_user_func(self::$onCreating, $paymentData);
         }
 
-        return self::$provider->data($paymentData);
+        try {
+            // Создать заказ в платежной системе и получить данные транзакции
+            self::$provider->setData($paymentData)->create();
+
+            $payment = Payment::query()->create([
+                'order_id' => $order->id,
+                'transaction_id' => self::$provider->transactionId(),
+                'provider' => self::$provider->providerName(),
+                'payment_url' => self::$provider->paymentUrl(),
+                'expire_at' => self::$provider->expireAt(),
+                'meta' => $order->orderItems->toJson(),
+            ]);
+        } catch (Throwable $e) {
+            if (is_callable(self::$onError)) {
+                call_user_func(
+                    self::$onError,
+                    self::$provider->errorMessage() ?? $e->getMessage()
+                );
+            }
+
+            throw PaymentProcessException::createFailed($e->getMessage());
+        }
+
+        if (is_callable(self::$onCreated)) {
+            call_user_func(self::$onCreated, $payment);
+        }
+
+        return self::$provider;
     }
 
+
     /**
-     * @return PaymentProviderContract
+     * @throws PaymentProcessException
      * @throws PaymentProviderException
      */
     public static function validate(): PaymentProviderContract
@@ -113,41 +139,58 @@ class PaymentSystem
             call_user_func(self::$onValidating);
         }
 
-        if (self::$provider->validate() && self::$provider->paid()) {
-            try {
-                DB::beginTransaction();
+        if (!self::$provider->validate()) {
+            throw PaymentProcessException::validationFailed();
+        }
 
-                $paymentHistory->transaction_id = self::$provider->transactionId();
-                $paymentHistory->save();
+        try {
+            // Получить данные транзакции по платежу
+            self::$provider->update();
 
-                $payment = Payment::query()
-                    ->with('order')
-                    ->where('transaction_id', self::$provider->transactionId())
-                    ->firstOr(function () {
-                        throw PaymentProcessException::paymentNotFound();
-                    });
-                $order = $payment->order;
+            DB::beginTransaction();
 
-                $payment->status->transitionTo(new PaidPaymentState($payment));
+            $paymentHistory->transaction_id = self::$provider->transactionId();
+            $paymentHistory->description = !empty(self::$provider->getData()->description) ? self::$provider->getData()->description : null;
+            $paymentHistory->save();
+
+            $payment = Payment::query()
+                ->with('order')
+                ->where('provider', self::$provider->providerName())
+                ->where('transaction_id', self::$provider->transactionId())
+                ->latest('id')
+                ->first();
+
+            $order = $payment?->order;
+
+            if (!$payment || !$order) {
+                throw PaymentProcessException::paymentModelsNotFound();
+            }
+
+            if (self::$provider->paid()) {
                 $order->status->transitionTo(new PaidOrderState($order));
 
-                DB::commit();
-
-                if (is_callable(self::$onSuccess)) {
-                    call_user_func(self::$onSuccess, $payment);
-                }
-
-            } catch (PaymentProcessException $e) {
-                // Order cancelled
-                DB::rollBack();
-
-                if (is_callable(self::$onError)) {
-                    call_user_func(
-                        self::$onError,
-                        self::$provider->errorMessage() ?? $e->getMessage()
-                    );
-                }
+                $payment->status->transitionTo(new PaidPaymentState($payment));
+                $payment->amount = self::$provider->getData()->amount->value();
+                $payment->save();
             }
+
+            DB::commit();
+
+            if (is_callable(self::$onSuccess)) {
+                call_user_func(self::$onSuccess, $payment);
+            }
+
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            if (is_callable(self::$onError)) {
+                call_user_func(
+                    self::$onError,
+                    self::$provider->errorMessage() ?? $e->getMessage()
+                );
+            }
+
+            throw PaymentProcessException::updateFailed($e->getMessage());
         }
 
         return self::$provider;

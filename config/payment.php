@@ -11,12 +11,6 @@ return [
             'key' => env('PAYMENT_YOOKASSA_KEY', ''),
             'shop_id' => env('PAYMENT_YOOKASSA_SHOP_ID', ''),
         ],
-
-        'unit_pay' => [
-            'class' => UnitPay::class,
-            'key' => env('PAYMENT_UNITPAY_KEY', ''),
-            'shop_id' => env('PAYMENT_UNITPAY_SHOP_ID', ''),
-        ],
     ],
 
 ];

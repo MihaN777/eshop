@@ -7,25 +7,33 @@ use Illuminate\Http\JsonResponse;
 
 interface PaymentProviderContract
 {
-    public function paymentId(): ?int;
-
     public function transactionId(): ?string;
 
     public function configure(array $config): void;
 
-    public function data(PaymentData $data): self;
+    public function setData(PaymentData $data): self;
+
+    public function getData(): PaymentData;
+
+    public function create(): void;
+
+    public function update(): void;
+
+    public function requestRaw(): string;
 
     public function request(): mixed;
 
     public function response(): JsonResponse;
 
-    public function url(): string;
-
     public function validate(): bool;
 
     public function paid(): bool;
 
-    public function providerName(): string;
+    public function paymentUrl(): ?string;
+
+    public function expireAt(): ?string;
 
     public function errorMessage(): string;
+
+    public function providerName(): string;
 }
