@@ -18,6 +18,7 @@ class Payment extends Model
         'transaction_id',
         'provider',
         'status',
+        'amount',
         'payment_url',
         'meta',
         'expire_at',
