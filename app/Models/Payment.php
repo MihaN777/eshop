@@ -18,11 +18,14 @@ class Payment extends Model
         'transaction_id',
         'provider',
         'status',
+        'payment_url',
         'meta',
+        'expire_at',
     ];
 
     protected $casts = [
         'meta' => 'collection',
+        'expire_at' => 'datetime',
     ];
 
     public function status(): Attribute

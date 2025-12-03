@@ -21,7 +21,9 @@ return new class extends Migration {
             $table->string('transaction_id')->index()->nullable();
             $table->string('provider');
             $table->string('status')->default(PaymentStatuses::Pending->value);
+            $table->string('payment_url')->nullable();
             $table->json('meta')->nullable();
+            $table->timestamp('expire_at')->nullable();
             $table->timestamps();
         });
     }
