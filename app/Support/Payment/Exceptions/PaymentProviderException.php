@@ -10,4 +10,9 @@ class PaymentProviderException extends Exception
     {
         return new self('Invalid provider');
     }
+
+    public static function validationFailed(): self
+    {
+        return new self('Validation failed');
+    }
 }
