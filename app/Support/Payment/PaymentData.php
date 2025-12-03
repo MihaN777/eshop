@@ -3,17 +3,20 @@
 namespace App\Support\Payment;
 
 use App\Support\ValueObjects\Price;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 final class PaymentData
 {
     public function __construct(
-        public ?int       $order_id,
-        public ?string    $transaction_id,
-        public string     $description,
-        public string     $return_url,
-        public Price      $amount,
-        public Collection $meta
+        public ?int        $order_id,
+        public ?string     $transaction_id,
+        public ?string     $description,
+        public ?string     $return_url,
+        public ?string     $payment_url,
+        public ?Carbon     $expired_at,
+        public ?Price      $amount,
+        public ?Collection $meta
     )
     {
     }
@@ -25,7 +28,9 @@ final class PaymentData
             'transaction_id' => $this->transaction_id,
             'description' => $this->description,
             'return_url' => $this->return_url,
-            'amount' => $this->amount->raw(),
+            'payment_url' => $this->payment_url,
+            'expired_at' => $this->expired_at?->toString(),
+            'amount' => $this->amount?->raw(),
             'meta' => $this->meta,
         ]);
     }

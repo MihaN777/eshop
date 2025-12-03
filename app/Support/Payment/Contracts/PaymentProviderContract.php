@@ -7,8 +7,6 @@ use Illuminate\Http\JsonResponse;
 
 interface PaymentProviderContract
 {
-    public function transactionId(): ?string;
-
     public function configure(array $config): void;
 
     public function setData(PaymentData $data): self;
@@ -29,9 +27,9 @@ interface PaymentProviderContract
 
     public function paid(): bool;
 
-    public function paymentUrl(): ?string;
+    public function transactionId(): ?string;
 
-    public function expireAt(): ?string; // TODO return ?Carbon
+    public function paymentUrl(): ?string;
 
     public function errorMessage(): string;
 

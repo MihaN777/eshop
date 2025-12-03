@@ -21,24 +21,15 @@ final class YooKassa implements PaymentProviderContract
 {
     protected Client $client;
     protected ?PaymentData $paymentData;
-    protected ?string $paymentUrl;
-    protected ?string $expireAt;
     protected string $errorMessage;
 
     public function __construct(array $config)
     {
         $this->client = new Client;
         $this->paymentData = null;
-        $this->paymentUrl = null;
-        $this->expireAt = null;
         $this->errorMessage = '';
 
         $this->configure($config);
-    }
-
-    public function transactionId(): ?string
-    {
-        return $this->paymentData->transaction_id;
     }
 
     public function configure(array $config): void
@@ -70,7 +61,7 @@ final class YooKassa implements PaymentProviderContract
             );
 
             $this->paymentData->transaction_id = $response->getId();
-            $this->paymentUrl = $response->getConfirmation()->getConfirmationUrl();
+            $this->paymentData->payment_url = $response->getConfirmation()->getConfirmationUrl();
         } catch (Throwable $e) {
             $this->errorMessage = $e->getMessage();
             throw new PaymentProviderException($e->getMessage());
@@ -88,7 +79,9 @@ final class YooKassa implements PaymentProviderContract
             order_id: null,
             transaction_id: $paymentObject->getId(),
             description: $paymentObject->getDescription(),
-            return_url: '',
+            return_url: null,
+            payment_url: null,
+            expired_at: null,
             amount: Price::make(
                 $paymentObject->getAmount()->getIntegerValue(),
                 $paymentObject->getAmount()->getCurrency(),
@@ -146,14 +139,14 @@ final class YooKassa implements PaymentProviderContract
         return $this->paymentObject()->getPaid();
     }
 
-    public function paymentUrl(): ?string
+    public function transactionId(): ?string
     {
-        return $this->paymentUrl;
+        return $this->paymentData->transaction_id;
     }
 
-    public function expireAt(): ?string
+    public function paymentUrl(): ?string
     {
-        return $this->expireAt;
+        return $this->paymentData->payment_url;
     }
 
     public function errorMessage(): string

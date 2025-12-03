@@ -80,6 +80,8 @@ class PaymentSystem
             transaction_id: null, // str()->orderedUuid()->toString()
             description: "Заказ №{$order->id}",
             return_url: route('catalog'),
+            payment_url: null,
+            expired_at: null,
             amount: $order->amount,
             meta: $order->orderItems
         );
@@ -94,10 +96,10 @@ class PaymentSystem
 
             $payment = Payment::query()->create([
                 'order_id' => $order->id,
-                'transaction_id' => self::$provider->transactionId(),
+                'transaction_id' => self::$provider->getData()->transaction_id,
+                'payment_url' => self::$provider->getData()->payment_url,
+                'expire_at' => self::$provider->getData()->expired_at,
                 'provider' => self::$provider->providerName(),
-                'payment_url' => self::$provider->paymentUrl(),
-                'expire_at' => self::$provider->expireAt(),
                 'meta' => $order->orderItems->toJson(),
             ]);
         } catch (Throwable $e) {
@@ -149,14 +151,14 @@ class PaymentSystem
 
             DB::beginTransaction();
 
-            $paymentHistory->transaction_id = self::$provider->transactionId();
+            $paymentHistory->transaction_id = self::$provider->getData()->transaction_id;
             $paymentHistory->description = !empty(self::$provider->getData()->description) ? self::$provider->getData()->description : null;
             $paymentHistory->save();
 
             $payment = Payment::query()
                 ->with('order')
                 ->where('provider', self::$provider->providerName())
-                ->where('transaction_id', self::$provider->transactionId())
+                ->where('transaction_id', self::$provider->getData()->transaction_id)
                 ->latest('id')
                 ->first();
 
