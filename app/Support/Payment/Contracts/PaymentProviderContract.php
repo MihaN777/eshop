@@ -31,7 +31,7 @@ interface PaymentProviderContract
 
     public function paymentUrl(): ?string;
 
-    public function expireAt(): ?string;
+    public function expireAt(): ?string; // TODO return ?Carbon
 
     public function errorMessage(): string;
 
