@@ -40,6 +40,10 @@ class PaymentServiceProvider extends ServiceProvider
             return $paymentData;
         });
 
+        PaymentSystem::onCreated(function (Payment $payment) {
+           //
+        });
+
         PaymentSystem::onValidating(function () {
             //
         });
