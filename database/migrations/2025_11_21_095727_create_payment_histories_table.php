@@ -10,6 +10,7 @@ return new class extends Migration {
         Schema::create('payment_histories', function (Blueprint $table) {
             $table->id();
             $table->string('transaction_id')->index()->nullable();
+            $table->string('description')->nullable();
             $table->string('provider');
             $table->string('method')->nullable();
             $table->json('payload')->nullable();
