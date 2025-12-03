@@ -79,6 +79,6 @@ class OrderController extends Controller
         // Перенаправление на оплату
         if ($order->payment_url) return redirect($order->payment_url);
 
-        return redirect()->route('profile');
+        return redirect()->route('catalog');
     }
 }
