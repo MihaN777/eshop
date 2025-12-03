@@ -35,7 +35,7 @@ class CartController extends Controller
 
         flash()->info('Товар добавлен в корзину');
 
-        return redirect()->intended(route('cart'));
+        return redirect()->route('cart');
     }
 
     public function quantity(CartItem $cartItem, CartQuantityRequest $request): RedirectResponse
@@ -43,7 +43,7 @@ class CartController extends Controller
         cart()->quantity($cartItem, (int)$request->get('quantity'));
         flash()->info('Количество товаров изменено');
 
-        return redirect()->intended(route('cart'));
+        return redirect()->route('cart');
     }
 
     public function delete(CartItem $cartItem): RedirectResponse
@@ -51,7 +51,7 @@ class CartController extends Controller
         cart()->delete($cartItem);
         flash()->info('Товар был удален');
 
-        return redirect()->intended(route('cart'));
+        return redirect()->route('cart');
     }
 
     public function truncate(): RedirectResponse
@@ -64,6 +64,6 @@ class CartController extends Controller
 
         flash()->info('Корзина очищена');
 
-        return redirect()->intended(route('cart'));
+        return redirect()->route('cart');
     }
 }
