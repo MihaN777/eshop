@@ -171,7 +171,7 @@ class PaymentSystem
                 $payment->amount = self::$provider->getData()->amount->value();
                 $payment->save();
 
-                if (self::$provider->getData()->amount->value() === $order->amount->value()) {
+                if (self::$provider->getData()->amount->equalTo($order->amount)) {
                     $order->status->transitionTo(new PaidOrderState($order));
                 }
             }

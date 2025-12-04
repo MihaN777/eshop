@@ -50,6 +50,11 @@ final class Price implements Stringable
         return $this->currencies[$this->currency];
     }
 
+    public function equalTo(Price $price): bool
+    {
+        return ($this->currency() === $price->currency()) && ($this->value() === $price->value());
+    }
+
     public function __toString(): string
     {
         return number_format($this->value(), 0, ',', ' ') . ' ' . $this->symbol();
