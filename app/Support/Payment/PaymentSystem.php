@@ -99,8 +99,8 @@ class PaymentSystem
                 'transaction_id' => self::$provider->getData()->transaction_id,
                 'payment_url' => self::$provider->getData()->payment_url,
                 'expire_at' => self::$provider->getData()->expired_at,
+                'meta' => self::$provider->getData()->meta?->toJson(),
                 'provider' => self::$provider->providerName(),
-                'meta' => $order->orderItems->toJson(),
             ]);
         } catch (Throwable $e) {
             if (is_callable(self::$onError)) {
