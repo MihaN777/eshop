@@ -82,9 +82,9 @@ final class YooKassa implements PaymentProviderContract
             return_url: null,
             payment_url: null,
             expired_at: null,
-            amount: Price::make(
-                $paymentObject->getAmount()->getIntegerValue(),
-                $paymentObject->getAmount()->getCurrency(),
+            amount: new Price(
+                value: $paymentObject->getAmount()->getIntegerValue(),
+                currency: $paymentObject->getAmount()->getCurrency(),
             ),
             meta: collect($paymentObject->getMetadata()->toArray())
         ));
