@@ -147,7 +147,7 @@ class PaymentSystem
 
             PaymentHistory::query()->create([
                 'transaction_id' => self::$provider->getData()->transaction_id,
-                'description' => !empty(self::$provider->getData()->description) ? self::$provider->getData()->description : null,
+                'description' => self::$provider->getData()->description,
                 'provider' => self::$provider->providerName(),
                 'payload' => self::$provider->request(),
                 'method' => request()->method(),
