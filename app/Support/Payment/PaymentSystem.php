@@ -131,17 +131,11 @@ class PaymentSystem
             throw PaymentProviderException::invalidProvider();
         }
 
-        $paymentHistory = PaymentHistory::query()->create([
-            'provider' => self::$provider->providerName(),
-            'method' => request()->method(),
-            'payload' => self::$provider->request(),
-        ]);
-
-        if (is_callable(self::$onValidating)) {
-            call_user_func(self::$onValidating);
-        }
-
         if (!self::$provider->validate()) {
+            if (is_callable(self::$onValidatingFailed)) {
+                call_user_func(self::$onValidatingFailed, self::$provider->requestRaw());
+            }
+
             throw PaymentProcessException::validationFailed();
         }
 
@@ -151,9 +145,13 @@ class PaymentSystem
 
             DB::beginTransaction();
 
-            $paymentHistory->transaction_id = self::$provider->getData()->transaction_id;
-            $paymentHistory->description = !empty(self::$provider->getData()->description) ? self::$provider->getData()->description : null;
-            $paymentHistory->save();
+            PaymentHistory::query()->create([
+                'transaction_id' => self::$provider->getData()->transaction_id,
+                'description' => !empty(self::$provider->getData()->description) ? self::$provider->getData()->description : null,
+                'provider' => self::$provider->providerName(),
+                'payload' => self::$provider->request(),
+                'method' => request()->method(),
+            ]);
 
             $payment = Payment::query()
                 ->with('order')

@@ -41,10 +41,10 @@ class PaymentServiceProvider extends ServiceProvider
         });
 
         PaymentSystem::onCreated(function (Payment $payment) {
-           //
+            //
         });
 
-        PaymentSystem::onValidating(function () {
+        PaymentSystem::onValidatingFailed(function (string $requestRaw) {
             //
         });
 

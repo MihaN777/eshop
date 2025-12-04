@@ -9,7 +9,7 @@ trait PaymentEvents
     protected static Closure $onCreating;
     protected static Closure $onCreated;
     protected static Closure $onSuccess;
-    protected static Closure $onValidating;
+    protected static Closure $onValidatingFailed;
     protected static Closure $onError;
 
     public static function onCreating(Closure $event): void
@@ -27,9 +27,9 @@ trait PaymentEvents
         self::$onSuccess = $event;
     }
 
-    public static function onValidating(Closure $event): void
+    public static function onValidatingFailed(Closure $event): void
     {
-        self::$onValidating = $event;
+        self::$onValidatingFailed = $event;
     }
 
     public static function onError(Closure $event): void
