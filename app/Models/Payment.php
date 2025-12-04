@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Domains\Order\Enums\PaymentStatuses;
+use App\Support\Casts\PriceCast;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ class Payment extends Model
     ];
 
     protected $casts = [
+        'amount' => PriceCast::class,
         'meta' => 'collection',
         'expire_at' => 'datetime',
     ];

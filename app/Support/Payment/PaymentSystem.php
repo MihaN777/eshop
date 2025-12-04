@@ -167,11 +167,13 @@ class PaymentSystem
             }
 
             if (self::$provider->paid()) {
-                $order->status->transitionTo(new PaidOrderState($order));
-
                 $payment->status->transitionTo(new PaidPaymentState($payment));
                 $payment->amount = self::$provider->getData()->amount->value();
                 $payment->save();
+
+                if (self::$provider->getData()->amount->value() === $order->amount->value()) {
+                    $order->status->transitionTo(new PaidOrderState($order));
+                }
             }
 
             DB::commit();
