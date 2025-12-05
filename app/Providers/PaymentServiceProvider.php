@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Payment;
+use App\Models\PaymentHistory;
 use App\Services\Payments\YooKassa;
 use App\Support\Payment\PaymentData;
 use App\Support\Payment\PaymentSystem;
@@ -44,7 +45,7 @@ class PaymentServiceProvider extends ServiceProvider
             //
         });
 
-        PaymentSystem::onValidatingFailed(function (string $requestRaw) {
+        PaymentSystem::onValidatingFailed(function (PaymentHistory $paymentHistory) {
             //
         });
 

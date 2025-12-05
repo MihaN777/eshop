@@ -23,6 +23,8 @@ interface PaymentProviderContract
 
     public function response(): JsonResponse;
 
+    public function payload(): array;
+
     public function validate(): bool;
 
     public function paid(): bool;

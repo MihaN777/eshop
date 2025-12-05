@@ -99,18 +99,17 @@ class PaymentSystem
                 'transaction_id' => self::$provider->getData()->transaction_id,
                 'payment_url' => self::$provider->getData()->payment_url,
                 'expire_at' => self::$provider->getData()->expired_at,
-                'meta' => self::$provider->getData()->meta?->toJson(),
+                'meta' => self::$provider->payload(),
                 'provider' => self::$provider->providerName(),
             ]);
         } catch (Throwable $e) {
+            $errorMsg = self::$provider->errorMessage() ?? $e->getMessage();
+
             if (is_callable(self::$onError)) {
-                call_user_func(
-                    self::$onError,
-                    self::$provider->errorMessage() ?? $e->getMessage()
-                );
+                call_user_func(self::$onError, $errorMsg);
             }
 
-            throw PaymentProcessException::createFailed($e->getMessage());
+            throw PaymentProcessException::createFailed($errorMsg);
         }
 
         if (is_callable(self::$onCreated)) {
@@ -131,27 +130,44 @@ class PaymentSystem
             throw PaymentProviderException::invalidProvider();
         }
 
+        $paymentHistory = PaymentHistory::query()->create([
+            'provider' => self::$provider->providerName(),
+            'payload' => self::$provider->requestRaw(),
+            'request_ip' => request()->ip(),
+            'method' => request()->method(),
+            'validated' => 'No',
+        ]);
+
         if (!self::$provider->validate()) {
             if (is_callable(self::$onValidatingFailed)) {
-                call_user_func(self::$onValidatingFailed, self::$provider->requestRaw());
+                call_user_func(self::$onValidatingFailed, $paymentHistory);
             }
 
             throw PaymentProcessException::validationFailed();
         }
 
+        $paymentHistory->validated = 'Yes';
+        $paymentHistory->save();
+
         try {
             // Получить данные транзакции по платежу
             self::$provider->update();
+        } catch (Throwable $e) {
+            $errorMsg = self::$provider->errorMessage() ?? $e->getMessage();
 
+            if (is_callable(self::$onError)) {
+                call_user_func(self::$onError, $errorMsg);
+            }
+
+            throw PaymentProcessException::updateFailed($errorMsg);
+        }
+
+        $paymentHistory->transaction_id = self::$provider->getData()->transaction_id;
+        $paymentHistory->description = self::$provider->getData()->description;
+        $paymentHistory->save();
+
+        try {
             DB::beginTransaction();
-
-            PaymentHistory::query()->create([
-                'transaction_id' => self::$provider->getData()->transaction_id,
-                'description' => self::$provider->getData()->description,
-                'provider' => self::$provider->providerName(),
-                'payload' => self::$provider->request(),
-                'method' => request()->method(),
-            ]);
 
             $payment = Payment::query()
                 ->with('order')
@@ -167,11 +183,13 @@ class PaymentSystem
             }
 
             if (self::$provider->paid()) {
+                $providerAmount = self::$provider->getData()->amount;
+
                 $payment->status->transitionTo(new PaidPaymentState($payment));
-                $payment->amount = self::$provider->getData()->amount->value();
+                $payment->amount = $providerAmount?->raw();
                 $payment->save();
 
-                if (self::$provider->getData()->amount->equalTo($order->amount)) {
+                if ($providerAmount?->equalRawTo($order->amount)) {
                     $order->status->transitionTo(new PaidOrderState($order));
                 }
             }
@@ -185,14 +203,13 @@ class PaymentSystem
         } catch (Throwable $e) {
             DB::rollBack();
 
+            $errorMsg = self::$provider->errorMessage() ?? $e->getMessage();
+
             if (is_callable(self::$onError)) {
-                call_user_func(
-                    self::$onError,
-                    self::$provider->errorMessage() ?? $e->getMessage()
-                );
+                call_user_func(self::$onError, $errorMsg);
             }
 
-            throw PaymentProcessException::updateFailed($e->getMessage());
+            throw PaymentProcessException::updateFailed($errorMsg);
         }
 
         return self::$provider;

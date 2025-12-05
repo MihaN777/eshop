@@ -123,6 +123,48 @@ final class YooKassa implements PaymentProviderContract
         return response()->json($response);
     }
 
+    public function payload(): array
+    {
+        $metadata = [];
+        foreach ($this->paymentData->meta as $item) {
+            $metadata[] = [
+                'product_id' => $item->product_id,
+                'title' => $item->product->title,
+                'price' => $item->price->value(),
+                'quantity' => $item->quantity,
+            ];
+        }
+
+        return [
+            'amount' => [
+                'value' => $this->paymentData->amount->value(),
+                'currency' => $this->paymentData->amount->currency(),
+            ],
+            'confirmation' => [
+                'type' => 'redirect',
+                'return_url' => $this->paymentData->return_url,
+            ],
+            'capture' => true,
+            'description' => $this->paymentData->description,
+            'receipt' => [
+                'items' => [
+                    'quantity' => 1,
+                    'amount' => [
+                        'value' => $this->paymentData->amount->value(),
+                        'currency' => $this->paymentData->amount->currency(),
+                    ],
+                    'vat_code' => 1,
+                    'description' => $this->paymentData->description,
+                    'payment_subject' => 'intellectual_activity',
+                    'payment_mode' => 'full_payment',
+                ],
+                'tax_system_code' => 1,
+                // 'email' => $this->paymentData->meta->get('email'),
+            ],
+            'metadata' => $metadata,
+        ];
+    }
+
     /**
      * @throws PaymentProviderException
      */
@@ -176,48 +218,6 @@ final class YooKassa implements PaymentProviderContract
         }
 
         return $notification->getObject();
-    }
-
-    private function payload(): array
-    {
-        $metadata = [];
-        foreach ($this->paymentData->meta as $item) {
-            $metadata[] = [
-                'product_id' => $item->product_id,
-                'title' => $item->product->title,
-                'price' => $item->price->value(),
-                'quantity' => $item->quantity,
-            ];
-        }
-
-        return [
-            'amount' => [
-                'value' => $this->paymentData->amount->value(),
-                'currency' => $this->paymentData->amount->currency(),
-            ],
-            'confirmation' => [
-                'type' => 'redirect',
-                'return_url' => $this->paymentData->return_url,
-            ],
-            'capture' => true,
-            'description' => $this->paymentData->description,
-            'receipt' => [
-                'items' => [
-                    'quantity' => 1,
-                    'amount' => [
-                        'value' => $this->paymentData->amount->value(),
-                        'currency' => $this->paymentData->amount->currency(),
-                    ],
-                    'vat_code' => 1,
-                    'description' => $this->paymentData->description,
-                    'payment_subject' => 'intellectual_activity',
-                    'payment_mode' => 'full_payment',
-                ],
-                'tax_system_code' => 1,
-                // 'email' => $this->paymentData->meta->get('email'),
-            ],
-            'metadata' => $metadata,
-        ];
     }
 
     private function idempotenceKey(): string
