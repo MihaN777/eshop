@@ -81,6 +81,8 @@ final class Price implements Stringable
 
     public function __toString(): string
     {
-        return number_format($this->value(), is_float($this->value()) ? 2 : 0, ',', ' ') . ' ' . $this->symbol();
+        $decimals = strlen(explode('.', (string)$this->value())[1] ?? '');
+
+        return number_format($this->value(), $decimals, ',', ' ') . ' ' . $this->symbol();
     }
 }
