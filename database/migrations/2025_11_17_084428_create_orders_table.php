@@ -28,7 +28,7 @@ return new class extends Migration {
                 ->index()
                 ->constrained('payment_methods');
 
-            $table->unsignedInteger('amount')->default(0);
+            $table->decimal('amount')->default(0);
             $table->timestamps();
         });
     }

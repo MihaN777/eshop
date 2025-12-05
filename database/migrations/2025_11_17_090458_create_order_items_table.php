@@ -22,7 +22,7 @@ return new class extends Migration {
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->unsignedInteger('price');
+            $table->decimal('price');
             $table->unsignedInteger('quantity');
             $table->timestamps();
         });

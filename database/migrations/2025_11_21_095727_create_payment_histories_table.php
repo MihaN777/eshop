@@ -12,8 +12,10 @@ return new class extends Migration {
             $table->string('transaction_id')->index()->nullable();
             $table->string('description')->nullable();
             $table->string('provider');
+            $table->string('validated');
+            $table->string('request_ip')->nullable();
             $table->string('method')->nullable();
-            $table->json('payload')->nullable();
+            $table->text('payload')->nullable();
             $table->timestamps();
         });
     }

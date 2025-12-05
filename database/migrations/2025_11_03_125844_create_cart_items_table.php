@@ -22,7 +22,7 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->unsignedInteger('price');
+            $table->decimal('price');
             $table->unsignedInteger('quantity');
             $table->string('string_option_values')->nullable();
 

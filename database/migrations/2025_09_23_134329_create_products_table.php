@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('slug')->unique();
             $table->string('title');
-            $table->unsignedInteger('price')->index();
+            $table->decimal('price')->index();
             $table->unsignedInteger('quantity')->index()->default(0);
             $table->text('text')->nullable();
             $table->json('json_properties')->nullable();
