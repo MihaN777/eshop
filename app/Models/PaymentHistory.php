@@ -10,11 +10,9 @@ class PaymentHistory extends Model
         'transaction_id',
         'description',
         'provider',
+        'validated',
+        'request_ip',
         'method',
         'payload',
-    ];
-
-    protected $casts = [
-        'payload' => 'collection',
     ];
 }

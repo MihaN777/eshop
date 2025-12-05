@@ -27,7 +27,7 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => PriceCast::class,
-        'meta' => 'collection',
+        'meta' => 'array',
         'expire_at' => 'datetime',
     ];
 
