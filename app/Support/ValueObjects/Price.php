@@ -37,11 +37,6 @@ final class Price implements Stringable
         return $this->value;
     }
 
-    public function roundRaw(): float|int
-    {
-        return is_float($this->value) ? round($this->value, 2) : $this->value;
-    }
-
     public function value(): float|int
     {
         $result = $this->value / $this->precision;
