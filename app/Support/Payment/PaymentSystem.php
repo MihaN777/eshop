@@ -189,7 +189,7 @@ class PaymentSystem
                 $payment->amount = $providerAmount?->raw();
                 $payment->save();
 
-                if ($providerAmount?->equalRawTo($order->amount)) {
+                if ($providerAmount?->rawEqualTo($order->amount)) {
                     $order->status->transitionTo(new PaidOrderState($order));
                 }
             }
