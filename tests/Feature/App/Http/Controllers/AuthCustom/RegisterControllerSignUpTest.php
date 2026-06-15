@@ -10,7 +10,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
-test('AuthCustom: Register', function () {
+test('AuthCustom: Register SignUp', function () {
     Notification::fake();
     Event::fake();
 
