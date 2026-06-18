@@ -26,7 +26,7 @@ class RegisterControllerTest extends TestCase
             ->assertViewIs('auth_custom.register');
     }
 
-    public function test_sign_up(): void {
+    public function test_sign_up_success(): void {
         Notification::fake();
         Event::fake();
 

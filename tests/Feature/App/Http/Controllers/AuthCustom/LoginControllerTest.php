@@ -23,7 +23,7 @@ class LoginControllerTest extends TestCase
             ->assertViewIs('auth_custom.login');
     }
 
-    public function test_sign_in(): void
+    public function test_sign_in_success(): void
     {
         Event::fake();
 
