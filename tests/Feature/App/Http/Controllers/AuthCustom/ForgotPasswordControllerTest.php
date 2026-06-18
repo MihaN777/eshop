@@ -6,13 +6,19 @@ use App\Http\Controllers\AuthCustom\ForgotPasswordController;
 use App\Models\User;
 use App\Notifications\AuthCustom\ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ForgotPasswordControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function testingCredentials(): array
+    {
+        return [
+            'email' => 'test@vk.com',
+        ];
+    }
 
     public function test_index(): void
     {
@@ -26,17 +32,10 @@ class ForgotPasswordControllerTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create(
-            [
-                'email' => 'test@vk.com',
-                'password' => Hash::make('password'),
-            ]
-        );
+        $user = User::factory()->create($this->testingCredentials());
 
-        $this->post(
-            action([ForgotPasswordController::class, 'forgotPasswordSend']),
-            ['email' => $user->email]
-        )->assertRedirect();
+        $this->post(action([ForgotPasswordController::class, 'forgotPasswordSend']), $this->testingCredentials())
+            ->assertRedirect();
 
         Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification) {
             $response = $this->get(route('password.reset', ['token' => $notification->token]));
@@ -45,5 +44,17 @@ class ForgotPasswordControllerTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_forgot_password_send_fail(): void
+    {
+        Notification::fake();
+
+        $this->assertDatabaseMissing('users', $this->testingCredentials());
+
+        $this->post(action([ForgotPasswordController::class, 'forgotPasswordSend']), $this->testingCredentials())
+            ->assertInvalid(['email']);
+
+        Notification::assertNothingSent();
     }
 }
