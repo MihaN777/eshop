@@ -15,7 +15,7 @@ class LoginControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testIndex(): void
+    public function test_index(): void
     {
         $response = $this->get(action([LoginController::class, 'login']))
             ->assertOk()
@@ -23,7 +23,7 @@ class LoginControllerTest extends TestCase
             ->assertViewIs('auth_custom.login');
     }
 
-    public function testSignIn(): void
+    public function test_sign_in(): void
     {
         Event::fake();
 
@@ -53,7 +53,7 @@ class LoginControllerTest extends TestCase
         Event::assertListening(SessionRegenerated::class, SessionRegeneratedListener::class);
     }
 
-    public function testLogout(): void
+    public function test_logout(): void
     {
         Event::fake();
 

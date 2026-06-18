@@ -14,7 +14,7 @@ class VerifyEmailControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testIndex(): void
+    public function test_index(): void
     {
         $user = User::factory()->create(
             [
@@ -31,7 +31,7 @@ class VerifyEmailControllerTest extends TestCase
             ->assertViewIs('auth_custom.verify-email');
     }
 
-    public function testEmailSend(): void {
+    public function test_email_send(): void {
         Notification::fake();
 
         $user = User::factory()->create(

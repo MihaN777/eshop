@@ -18,7 +18,7 @@ class RegisterControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testIndex(): void
+    public function test_index(): void
     {
         $response = $this->get(action([RegisterController::class, 'register']))
             ->assertOk()
@@ -26,7 +26,7 @@ class RegisterControllerTest extends TestCase
             ->assertViewIs('auth_custom.register');
     }
 
-    public function testSignUpSuccess(): void {
+    public function test_sign_up(): void {
         Notification::fake();
         Event::fake();
 

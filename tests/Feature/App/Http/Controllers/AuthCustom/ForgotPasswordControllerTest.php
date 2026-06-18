@@ -10,7 +10,7 @@ class ForgotPasswordControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testIndex(): void
+    public function test_index(): void
     {
         $this->get(action([ForgotPasswordController::class, 'forgotPassword']))
             ->assertOk()
