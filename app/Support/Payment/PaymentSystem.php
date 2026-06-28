@@ -2,6 +2,7 @@
 
 namespace App\Support\Payment;
 
+use App\Domains\Order\Enums\PaymentStatuses;
 use App\Domains\Order\States\PaidOrderState;
 use App\Domains\Order\States\Payment\PaidPaymentState;
 use App\Models\Order;
@@ -180,6 +181,18 @@ class PaymentSystem
 
             if (!$payment || !$order) {
                 throw PaymentProcessException::paymentModelsNotFound();
+            }
+
+            // Идемпотентность вебхука: повторное уведомление по уже оплаченному
+            // платежу не должно повторно менять состояние (переход состояние из Paid запрещён) и давать 500.
+            if ($payment->status->value() === PaymentStatuses::Paid->value) {
+                DB::commit();
+
+                if (is_callable(self::$onSuccess)) {
+                    call_user_func(self::$onSuccess, $payment);
+                }
+
+                return self::$provider;
             }
 
             if (self::$provider->paid()) {

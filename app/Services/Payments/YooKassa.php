@@ -222,6 +222,8 @@ final class YooKassa implements PaymentProviderContract
 
     private function idempotenceKey(): string
     {
-        return uniqid('', true);
+        // Детерминированный ключ от заказа: повтор с тем же order_id
+        // вернёт тот же платёж в YooKassa, а не создаст дубль.
+        return 'order_' . $this->paymentData->order_id;
     }
 }

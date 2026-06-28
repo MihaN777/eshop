@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Actions\DTOs\OrderCreateDTO;
 use App\Actions\DTOs\OrderCustomerDTO;
 use App\Actions\DTOs\UserRegisterDTO;
+use App\Actions\InitiateOrderPaymentAction;
 use App\Actions\OrderCreateAction;
 use App\Actions\UserRegisterAction;
 use App\Domains\Order\Processes\AssignCustomerProcess;
@@ -14,7 +15,6 @@ use App\Domains\Order\Processes\CheckProductQuantitiesProcess;
 use App\Domains\Order\Processes\ClearCartProcess;
 use App\Domains\Order\Processes\DecreaseProductsQuantitiesProcess;
 use App\Domains\Order\Processes\OrderProcess;
-use App\Domains\Order\Processes\PaymentProcess;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\OrderHandleRequest;
 use App\Models\DeliveryType;
@@ -38,7 +38,11 @@ class OrderController extends Controller
         ]);
     }
 
-    public function handle(OrderHandleRequest $request, OrderCreateAction $orderCreateAction): RedirectResponse
+    public function handle(
+        OrderHandleRequest         $request,
+        OrderCreateAction          $orderCreateAction,
+        InitiateOrderPaymentAction $initiateOrderPayment,
+    ): RedirectResponse
     {
         // Создание пользователя и заказа
         $customerDto = OrderCustomerDTO::fromArray($request->get('customer'));
@@ -63,8 +67,8 @@ class OrderController extends Controller
             $request->get('payment_method_id'),
         ));
 
-        // Обработка заказа
-        (new OrderProcess($order))
+        // Обработка заказа (только локальные изменения, в одной транзакции)
+        $order = (new OrderProcess($order))
             ->processes([
                 new CheckProductQuantitiesProcess(),
                 new AssignCustomerProcess($customerDto),
@@ -72,12 +76,14 @@ class OrderController extends Controller
                 new ChangeStateToPendingProcess(),
                 new DecreaseProductsQuantitiesProcess(),
                 new ClearCartProcess(),
-                new PaymentProcess(),
             ])
             ->run();
 
+        // Инициация оплаты — ВНЕ транзакции (внешний вызов уже после COMMIT)
+        $paymentUrl = $initiateOrderPayment($order, $request->get('provider', 'yoo_kassa'));
+
         // Перенаправление на оплату
-        if ($order->payment_url) return redirect($order->payment_url);
+        if ($paymentUrl) return redirect($paymentUrl);
 
         return redirect()->route('catalog');
     }
