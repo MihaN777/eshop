@@ -19,9 +19,9 @@ class Transaction
 
             $result = $callback();
 
-            if (!is_null($finished)) $finished($result);
-
             DB::commit();
+
+            if (!is_null($finished)) $finished($result);
 
             return $result;
         } catch (Throwable $e) {
