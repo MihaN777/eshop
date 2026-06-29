@@ -202,6 +202,12 @@ final class YooKassa implements PaymentProviderContract
     }
 
     /**
+     * ======================================================================
+     * Далее идут дополнительные методы вне контракта PaymentProviderContract
+     * ======================================================================
+     */
+
+    /**
      * @throws PaymentProviderException
      */
     private function paymentObject(): PaymentResponse|PaymentInterface
@@ -220,10 +226,10 @@ final class YooKassa implements PaymentProviderContract
         return $notification->getObject();
     }
 
-    private function idempotenceKey(): string
+    private function idempotenceKey(): ?int
     {
         // Детерминированный ключ от заказа: повтор с тем же order_id
         // вернёт тот же платёж в YooKassa, а не создаст дубль.
-        return 'order_' . $this->paymentData->order_id;
+        return $this->paymentData->order_id;
     }
 }
