@@ -3,43 +3,19 @@
 namespace Tests\Feature\App\Domains\Order\Processes;
 
 use App\Domains\Order\Exceptions\OrderProcessException;
-use App\Domains\Order\Processes\CheckProductQuantitiesProcess;
 use App\Domains\Order\Processes\DecreaseProductsQuantitiesProcess;
-use App\Models\Cart;
-use App\Models\CartItem;
+use Tests\Feature\App\Domains\Order\Processes\Traits\HasPassClosure;
+use Tests\Feature\App\Domains\Order\Processes\Traits\HasSeedCartItem;
 use App\Models\Order;
 use App\Models\Product;
-use Closure;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ProductQuantitiesProcessTest extends TestCase
+class DecreaseProductsQuantitiesProcessTest extends TestCase
 {
     use RefreshDatabase;
-
-    private function seedCartItem(Product $product, int $quantity, string $options = ''): void
-    {
-        $cart = Cart::query()->firstOrCreate([
-            'storage_id' => session()->getId(),
-        ]);
-
-        CartItem::query()->create([
-            'cart_id' => $cart->getKey(),
-            'product_id' => $product->getKey(),
-            'string_option_values' => $options,
-            'price' => $product->price,
-            'quantity' => $quantity,
-        ]);
-    }
-
-    /**
-     * Заглушку для Pipeline.
-     * Возвращает замыкание следующего шага Pipeline.
-     */
-    private function pass(): Closure
-    {
-        return fn(Order $order) => $order;
-    }
+    use HasPassClosure;
+    use HasSeedCartItem;
 
     /**
      * Базовый инвариант движка БД: атомарное условное списание не уводит остаток в минус.
@@ -89,20 +65,5 @@ class ProductQuantitiesProcessTest extends TestCase
         (new DecreaseProductsQuantitiesProcess())->handle(new Order(), $this->pass());
 
         $this->assertSame(6, $product->fresh()->quantity);
-    }
-
-    /**
-     * Один товар в нескольких позициях корзины (разные опции) суммируется:
-     * 6 + 6 = 12 > остаток 10 — должна быть ошибка.
-     */
-    public function test_check_process_aggregates_same_product_across_cart_items(): void
-    {
-        $product = Product::factory()->create(['quantity' => 10]);
-        $this->seedCartItem($product, 6, '1');
-        $this->seedCartItem($product, 6, '2');
-
-        $this->expectException(OrderProcessException::class);
-
-        (new CheckProductQuantitiesProcess())->handle(new Order(), $this->pass());
     }
 }
