@@ -173,7 +173,16 @@ class PaymentSystem
             $payment = Payment::query()
                 ->with('order')
                 ->where('provider', self::$provider->providerName())
-                ->where('transaction_id', self::$provider->getData()->transaction_id)
+                ->when(isset(self::$provider->getData()->order_id),
+                    // True
+                    function ($query) {
+                        return $query->where('order_id', self::$provider->getData()->order_id);
+                    },
+                    // False
+                    function ($query) {
+                        return $query->where('transaction_id', self::$provider->getData()->transaction_id);
+                    }
+                )
                 ->latest('id')
                 ->first();
 
