@@ -80,7 +80,7 @@ class OrderController extends Controller
             ->run();
 
         // Инициация оплаты — ВНЕ транзакции (внешний вызов уже после COMMIT)
-        $paymentUrl = $initiateOrderPayment($order, $request->get('provider', 'yoo_kassa'));
+        $paymentUrl = $initiateOrderPayment($order, $request->get('provider', 'fake'));
 
         // Перенаправление на оплату
         if ($paymentUrl) return redirect($paymentUrl);
