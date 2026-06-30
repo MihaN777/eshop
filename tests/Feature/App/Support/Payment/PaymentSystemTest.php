@@ -72,7 +72,7 @@ class PaymentSystemTest extends TestCase
     /**
      * Успешный callback: платёж и заказ переходят в paid, история validated = Yes.
      */
-    public function test_validate_marks_payment_and_order_paid(): void
+    public function test_payment_and_order_transferred_to_paid(): void
     {
         $order = $this->makeOrder(100, 'pending');
         $payment = $this->makePayment($order, 'pending');
@@ -84,7 +84,7 @@ class PaymentSystemTest extends TestCase
         $fake->notifyAmount = Price::make(100);
         PaymentSystem::setProvider($fake);
 
-        PaymentSystem::validate();
+        PaymentSystem::update();
 
         $this->assertSame('paid', $payment->fresh()->status->value());
         $this->assertSame('paid', $order->fresh()->status->value());
@@ -98,7 +98,7 @@ class PaymentSystemTest extends TestCase
      * Идемпотентность вебхука: повторное уведомление по уже оплаченному платежу
      * не бросает исключение (иначе переход paid -> paid дал бы ошибку) и ничего не ломает.
      */
-    public function test_validate_is_idempotent_for_already_paid_payment(): void
+    public function test_attempt_to_pay_for_already_paid_payment(): void
     {
         $order = $this->makeOrder(100, 'paid');
         $payment = $this->makePayment($order, 'paid');
@@ -110,7 +110,7 @@ class PaymentSystemTest extends TestCase
         $fake->notifyAmount = Price::make(100);
         PaymentSystem::setProvider($fake);
 
-        PaymentSystem::validate();
+        PaymentSystem::update();
 
         $this->assertSame('paid', $payment->fresh()->status->value());
         $this->assertSame('paid', $order->fresh()->status->value());
@@ -119,14 +119,14 @@ class PaymentSystemTest extends TestCase
     /**
      * Проваленная проверка callback: исключение + запись истории с validated = No.
      */
-    public function test_validate_throws_on_failed_validation(): void
+    public function test_throws_exception_on_failed_validation(): void
     {
         $fake = new FakePaymentProvider();
         $fake->validates = false;
         PaymentSystem::setProvider($fake);
 
         try {
-            PaymentSystem::validate();
+            PaymentSystem::update();
             $this->fail('Ожидалось PaymentProcessException');
         } catch (PaymentProcessException) {
             // ожидаемо
@@ -138,7 +138,7 @@ class PaymentSystemTest extends TestCase
     /**
      * Несовпадение суммы: платёж становится paid, но заказ остаётся pending.
      */
-    public function test_validate_keeps_order_pending_on_amount_mismatch(): void
+    public function test_discrepancy_between_amount_of_payment_and_order(): void
     {
         $order = $this->makeOrder(100, 'pending');
         $payment = $this->makePayment($order, 'pending');
@@ -150,7 +150,7 @@ class PaymentSystemTest extends TestCase
         $fake->notifyAmount = Price::make(50);
         PaymentSystem::setProvider($fake);
 
-        PaymentSystem::validate();
+        PaymentSystem::update();
 
         $this->assertSame('paid', $payment->fresh()->status->value());
         $this->assertSame('pending', $order->fresh()->status->value());

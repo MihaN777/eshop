@@ -14,7 +14,7 @@ class PaymentController extends Controller
         try {
             PaymentSystem::setProviderByName($provider);
 
-            $response = PaymentSystem::validate()->response();
+            $response = PaymentSystem::update()->response();
         } catch (Throwable $e) {
             return response()->json(
                 data: ['error' => $e->getMessage()],

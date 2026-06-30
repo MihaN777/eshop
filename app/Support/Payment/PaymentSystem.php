@@ -119,13 +119,12 @@ class PaymentSystem
 
         return self::$provider;
     }
-
-
+    
     /**
      * @throws PaymentProcessException
      * @throws PaymentProviderException
      */
-    public static function validate(): PaymentProviderContract
+    public static function update(): PaymentProviderContract
     {
         if (!self::$provider instanceof PaymentProviderContract) {
             throw PaymentProviderException::invalidProvider();
