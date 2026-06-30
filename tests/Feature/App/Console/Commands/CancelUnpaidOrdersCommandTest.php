@@ -16,7 +16,7 @@ class CancelUnpaidOrdersCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const string TEST_PROVIDER = 'yoo_kassa';
+    private const string TEST_PROVIDER = 'fake';
 
     private function makeOrder(string $status, Product $product, int $qty, ?CarbonInterface $createdAt = null): Order
     {

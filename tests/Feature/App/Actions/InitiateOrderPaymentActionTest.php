@@ -14,7 +14,7 @@ class InitiateOrderPaymentActionTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const string TEST_PROVIDER = 'yoo_kassa';
+    private const string TEST_PROVIDER = 'fake';
 
     private function makeOrder(bool $redirectToPay): Order
     {
