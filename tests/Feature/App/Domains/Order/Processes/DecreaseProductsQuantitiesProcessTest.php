@@ -4,18 +4,16 @@ namespace Tests\Feature\App\Domains\Order\Processes;
 
 use App\Domains\Order\Exceptions\OrderProcessException;
 use App\Domains\Order\Processes\DecreaseProductsQuantitiesProcess;
-use Tests\Feature\App\Domains\Order\Processes\Traits\HasPassClosure;
-use Tests\Feature\App\Domains\Order\Processes\Traits\HasSeedCartItem;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\Traits\CreatesOrderData;
 use Tests\TestCase;
 
 class DecreaseProductsQuantitiesProcessTest extends TestCase
 {
     use RefreshDatabase;
-    use HasPassClosure;
-    use HasSeedCartItem;
+    use CreatesOrderData;
 
     /**
      * Базовый инвариант движка БД: атомарное условное списание не уводит остаток в минус.

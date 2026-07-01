@@ -7,15 +7,13 @@ use App\Domains\Order\Processes\CheckProductQuantitiesProcess;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Feature\App\Domains\Order\Processes\Traits\HasPassClosure;
-use Tests\Feature\App\Domains\Order\Processes\Traits\HasSeedCartItem;
+use Tests\Support\Traits\CreatesOrderData;
 use Tests\TestCase;
 
 class CheckProductQuantitiesProcessTest extends TestCase
 {
     use RefreshDatabase;
-    use HasPassClosure;
-    use HasSeedCartItem;
+    use CreatesOrderData;
 
     /**
      * Один товар в нескольких позициях корзины (разные опции) суммируется:

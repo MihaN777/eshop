@@ -5,15 +5,13 @@ namespace Tests\Feature\App\Domains\Order\Processes;
 use App\Actions\DTOs\OrderCustomerDTO;
 use App\Domains\Order\Processes\AssignCustomerProcess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Feature\App\Domains\Order\Processes\Traits\HasPassClosure;
-use Tests\Support\Concerns\CreatesOrderData;
+use Tests\Support\Traits\CreatesOrderData;
 use Tests\TestCase;
 
 class AssignCustomerProcessTest extends TestCase
 {
     use RefreshDatabase;
     use CreatesOrderData;
-    use HasPassClosure;
 
     /**
      * Процесс создаёт order_customer из DTO и привязывает к заказу.
