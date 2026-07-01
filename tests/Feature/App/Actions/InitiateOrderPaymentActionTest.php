@@ -54,4 +54,24 @@ class InitiateOrderPaymentActionTest extends TestCase
 
         $this->assertSame('https://pay.example/abc', $url);
     }
+
+    /**
+     * Успех через create(): живого платежа нет -> провайдер резолвится по имени,
+     * создаётся платёж и возвращается его payment_url.
+     */
+    public function test_creates_returns_url_and_payment_success(): void
+    {
+        $order = $this->makeOrder(redirectToPay: true);
+
+        $url = (new InitiateOrderPaymentAction())($order, self::TEST_PROVIDER);
+
+        $this->assertSame('https://fake.pay/redirect', $url);
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'provider' => 'fake',
+            'transaction_id' => 'fake-tx-001',
+            'payment_url' => 'https://fake.pay/redirect',
+            'status' => 'pending',
+        ]);
+    }
 }
