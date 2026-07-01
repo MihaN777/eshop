@@ -38,11 +38,11 @@ class PaymentSystemTest extends TestCase
     }
 
     /**
-     * setProviderByName() резолвит провайдера из config('payment.providers').
+     * setProviderByName() резолвит провайдера из config('payment.providers.testing').
      */
     public function test_set_provider_by_name_resolves_from_config(): void
     {
-        config()->set('payment.providers.fake', ['class' => FakePaymentProvider::class]);
+        config()->set('payment.providers.testing.fake', ['class' => FakePaymentProvider::class]);
 
         PaymentSystem::setProviderByName('fake');
 

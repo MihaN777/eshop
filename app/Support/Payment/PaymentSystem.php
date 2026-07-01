@@ -47,7 +47,7 @@ class PaymentSystem
             ->slug('_')
             ->value();
 
-        $providers = config('payment.providers', []);
+        $providers = config(app()->isProduction() ? 'payment.providers.production' : 'payment.providers.testing', []);
 
         if (!array_key_exists($provider, $providers)) {
             throw PaymentProviderException::invalidProvider();
@@ -119,7 +119,7 @@ class PaymentSystem
 
         return self::$provider;
     }
-    
+
     /**
      * @throws PaymentProcessException
      * @throws PaymentProviderException
