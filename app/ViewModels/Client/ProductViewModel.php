@@ -35,8 +35,13 @@ class ProductViewModel extends ViewModel
                 ->reverse()
                 ->slice(0, 4);
 
-            if ($also->isNotEmpty())
-                return Product::query()->whereIn('id', $also->toArray())->limit(4)->get();
+            if ($also->isNotEmpty()) {
+                return Product::query()
+                    ->with('previewImage')
+                    ->whereIn('id', $also->toArray())
+                    ->limit(4)
+                    ->get();
+            }
         }
 
         return new Collection;

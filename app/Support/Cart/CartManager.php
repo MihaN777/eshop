@@ -148,7 +148,7 @@ class CartManager
         if (!$cart) return collect();
 
         return CartItem::query()
-            ->with(['product', 'optionValues.option'])
+            ->with(['product.previewImage', 'optionValues.option'])
             ->whereBelongsTo($cart)
             ->get();
     }

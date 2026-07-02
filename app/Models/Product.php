@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
@@ -81,6 +82,11 @@ class Product extends Model
         return $this->hasMany(Image::class);
     }
 
+    public function previewImage(): HasOne
+    {
+        return $this->hasOne(Image::class)->where('type', Image::IMAGE_TYPE_PREVIEW);
+    }
+
     // Функции модели
 
     public function deleteWithRelations(): bool
@@ -106,7 +112,7 @@ class Product extends Model
 
     public function storagePreviewImage(): string
     {
-        $path = $this->images()->where('type', 'preview')->first()?->path;
+        $path = $this->previewImage?->path;
 
         return (!$path || !Storage::exists($path)) ? Image::PRODUCT_IMAGE_DEFAULT_PREVIEW : '/storage/' . trim($path, '/\\');
     }

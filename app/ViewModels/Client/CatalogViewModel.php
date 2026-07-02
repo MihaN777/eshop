@@ -29,6 +29,7 @@ class CatalogViewModel extends ViewModel
     {
         return Product::query()
             ->select(['id', 'slug', 'title', 'price', 'json_properties'])
+            ->with('previewImage')
             ->when(request('s'), function (Builder $q) {
                 return $q->whereFullText(['title', 'text'], request('s'));
             })

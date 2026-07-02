@@ -38,6 +38,7 @@ class HomeViewModel extends ViewModel
     {
         return Product::query()
             ->homePage()
+            ->with('previewImage')
             ->get();
     }
 }
