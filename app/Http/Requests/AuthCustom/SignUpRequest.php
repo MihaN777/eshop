@@ -24,7 +24,7 @@ class SignUpRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:1', 'max:255'],
-            'email' => ['required', 'email:dns', 'unique:users,email'],
+            'email' => ['required', 'unique:users,email', app()->isProduction() ? 'email:dns' : 'email'],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ];
     }
@@ -33,9 +33,9 @@ class SignUpRequest extends FormRequest
     {
         $this->merge([
             'email' => str(request('email'))
-            ->squish() // Trim
-            ->lower()
-            ->value()
+                ->squish() // Trim
+                ->lower()
+                ->value()
         ]);
     }
 }

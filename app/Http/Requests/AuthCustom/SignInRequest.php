@@ -22,7 +22,7 @@ class SignInRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email:dns'],
+            'email' => ['required', app()->isProduction() ? 'email:dns' : 'email'],
             'password' => ['required'],
         ];
     }

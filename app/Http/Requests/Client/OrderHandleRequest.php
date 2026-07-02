@@ -27,8 +27,8 @@ class OrderHandleRequest extends FormRequest
             'customer.first_name' => ['required'],
             'customer.last_name' => ['required'],
             'customer.email' => $this->boolean('create_account')
-                ? ['required', 'email:dns', 'unique:users,email']
-                : ['required', 'email:dns'],
+                ? ['required', 'unique:users,email', app()->isProduction() ? 'email:dns' : 'email']
+                : ['required', app()->isProduction() ? 'email:dns' : 'email'],
             'customer.phone' => ['required', new PhoneRule],
             'customer.city' => ['sometimes'],
             'customer.address' => ['sometimes'],
