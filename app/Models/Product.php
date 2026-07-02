@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 #[ObservedBy([ProductObserver::class])]
@@ -112,8 +111,12 @@ class Product extends Model
 
     public function storagePreviewImage(): string
     {
-        $path = $this->previewImage?->path;
+        // previewImage при eager loading (->with('previewImage')) не дает N+1 на каждый товар,
+        // а exists() кеширует проверку состояния ФС.
+        $image = $this->previewImage;
 
-        return (!$path || !Storage::exists($path)) ? Image::PRODUCT_IMAGE_DEFAULT_PREVIEW : '/storage/' . trim($path, '/\\');
+        return $image && $image->exists()
+            ? $image->storageImage()
+            : Image::PRODUCT_IMAGE_DEFAULT_PREVIEW;
     }
 }

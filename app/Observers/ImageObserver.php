@@ -21,7 +21,10 @@ class ImageObserver implements ShouldHandleEventsAfterCommit
      */
     public function updated(Image $image): void
     {
-        //
+        if ($image->wasChanged('path')) {
+            Image::forgetExistsCache($image->getOriginal('path'));
+            Image::forgetExistsCache($image->path);
+        }
     }
 
     /**
@@ -30,11 +33,12 @@ class ImageObserver implements ShouldHandleEventsAfterCommit
      */
     public function deleted(Image $image): void
     {
+        Image::forgetExistsCache($image->path);
+
         $msgExists = "Не существует файл для удаления: {$image->path}";
         $msgDelete = "Не удалось удалить файл: {$image->path}";
 
-        if (!Storage::exists($image->path))
-        {
+        if (!Storage::exists($image->path)) {
             logger()->info($msgExists);
             logger()->channel('telegram')->info($msgExists);
             return;
