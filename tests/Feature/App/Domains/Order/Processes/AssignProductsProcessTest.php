@@ -3,6 +3,8 @@
 namespace Tests\Feature\App\Domains\Order\Processes;
 
 use App\Domains\Order\Processes\AssignProductsProcess;
+use App\Models\Option;
+use App\Models\OptionValue;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Traits\CreatesOrderData;
@@ -30,5 +32,30 @@ class AssignProductsProcessTest extends TestCase
             'quantity' => 2,
         ]);
         $this->assertEquals(3000, $order->fresh()->amount->raw());
+    }
+
+    /**
+     * Опции позиции переносятся из корзины в заказ
+     * (cart_item_option_value -> order_item_option_value).
+     */
+    public function test_transfers_cart_item_option_values_to_order_item(): void
+    {
+        $option = Option::factory()->create();
+        $optionValues = OptionValue::factory(2)->create(['option_id' => $option->id]);
+
+        $product = Product::factory()->create(['quantity' => 10]);
+        $cartItem = $this->seedCartItem($product, 1);
+        $cartItem->optionValues()->attach($optionValues->pluck('id')->all());
+
+        $order = $this->makeOrder();
+
+        (new AssignProductsProcess())->handle($order, $this->pass());
+
+        $orderItem = $order->orderItems()->first();
+
+        $this->assertEqualsCanonicalizing(
+            $optionValues->pluck('id')->all(),
+            $orderItem->optionValues->pluck('id')->all()
+        );
     }
 }
