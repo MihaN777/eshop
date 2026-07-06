@@ -12,20 +12,17 @@ return new class extends Migration {
     {
         Schema::create('category_product', function (Blueprint $table) {
             $table->id();
+            $table->unique(['category_id', 'product_id']);
 
             $table->foreignId('category_id')
-                ->index()
                 ->constrained('categories')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
             $table->foreignId('product_id')
-                ->index()
                 ->constrained('products')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-
-            $table->timestamps();
         });
     }
 

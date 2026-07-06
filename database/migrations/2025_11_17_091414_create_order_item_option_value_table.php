@@ -9,20 +9,17 @@ return new class extends Migration {
     {
         Schema::create('order_item_option_value', function (Blueprint $table) {
             $table->id();
+            $table->unique(['order_item_id', 'option_value_id']);
 
             $table->foreignId('order_item_id')
-                ->index()
                 ->constrained('order_items')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
             $table->foreignId('option_value_id')
-                ->index()
                 ->constrained('option_values')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-
-            $table->timestamps();
         });
     }
 
