@@ -15,11 +15,13 @@ return new class extends Migration {
             $table->unique(['category_id', 'product_id']);
 
             $table->foreignId('category_id')
+                ->index()
                 ->constrained('categories')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
             $table->foreignId('product_id')
+                ->index()
                 ->constrained('products')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();

@@ -12,11 +12,13 @@ return new class extends Migration {
             $table->unique(['product_id', 'property_id']);
 
             $table->foreignId('product_id')
+                ->index()
                 ->constrained('products')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
             $table->foreignId('property_id')
+                ->index()
                 ->constrained('properties')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
