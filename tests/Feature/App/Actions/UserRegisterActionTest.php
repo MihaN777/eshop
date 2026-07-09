@@ -180,8 +180,6 @@ class UserRegisterActionTest extends TestCase
      */
     public function test_does_not_login_user_when_login_user_is_false(): void
     {
-        Mail::fake();
-
         $dto = $this->makeDto(['login_user' => false]);
 
         $user = (new UserRegisterAction())($dto);
@@ -212,7 +210,6 @@ class UserRegisterActionTest extends TestCase
     public function test_does_not_fire_session_regenerated_event_when_not_logging_in(): void
     {
         Event::fake();
-        Mail::fake();
 
         $dto = $this->makeDto(['login_user' => false]);
 
