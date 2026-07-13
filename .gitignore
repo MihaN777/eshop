@@ -24,6 +24,7 @@ TODO.log
 /.vscode
 /.zed
 /.osp
+/.koda
 boost.json
 mcp.json
 .mcp.json
