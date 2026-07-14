@@ -59,6 +59,11 @@ final class Price implements Stringable
         return $this->currencies[$this->currency];
     }
 
+	public function currencyEqualTo(Price $price): bool
+    {
+        return $this->currency() == $price->currency();
+    }
+
     public function rawEqualTo(Price $price): bool
     {
         return $this->raw() == $price->raw();
@@ -69,9 +74,14 @@ final class Price implements Stringable
         return $this->value() == $price->value();
     }
 
-    public function priceEqualTo(Price $price): bool
+	public function priceEqualTo(Price $price): bool
     {
-        return ($this->currency() == $price->currency()) && ($this->value() == $price->value());
+        return $this->rawEqualTo($price) && $this->currencyEqualTo($price);
+    }
+
+    public function priceValueEqualTo(Price $price): bool
+    {
+        return  $this->valueEqualTo($price) && $this->currencyEqualTo($price);
     }
 
     public function __toString(): string
