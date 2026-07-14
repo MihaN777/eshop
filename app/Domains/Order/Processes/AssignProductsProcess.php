@@ -4,6 +4,7 @@ namespace App\Domains\Order\Processes;
 
 use App\Domains\Order\Processes\Contracts\OrderProcessContract;
 use App\Models\Order;
+use App\Support\ValueObjects\Price;
 
 class AssignProductsProcess implements OrderProcessContract
 {
@@ -24,7 +25,14 @@ class AssignProductsProcess implements OrderProcessContract
         }
 
         $order->load(['orderItems.product']);
-        $order->amount = $cart->amount();
+
+        $cartAmount = $cart->amount();
+        $order->amount = new Price(
+            value: $cartAmount->raw() + $order->deliveryType->price->raw(),
+            precision: $cartAmount->precision(),
+            currency: $cartAmount->currency(),
+        );
+
         $order->save();
 
         return $next($order);

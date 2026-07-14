@@ -19,6 +19,7 @@ return new class extends Migration {
         DB::table('delivery_types')->insert(['title' => 'Самовывоз']);
         DB::table('delivery_types')->insert([
             'title' => 'Курьером',
+            'price' => '1000',
             'with_address' => true,
         ]);
     }
