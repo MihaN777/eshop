@@ -36,6 +36,7 @@ class OrderCreateActionTest extends TestCase
             'user_id' => $dto->user_id,
             'delivery_type_id' => $dto->delivery_type_id,
             'payment_method_id' => $dto->payment_method_id,
+            'status' => 'new'
         ]);
     }
 }
