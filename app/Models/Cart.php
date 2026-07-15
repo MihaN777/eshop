@@ -30,10 +30,15 @@ class Cart extends Model
 
     // Функции модели
 
+    /**
+     * Чистятся только гостевые корзины: они живут ровно столько, сколько сессия.
+     * Корзина, привязанная к аккаунту, переживает логаут и прунингу не подлежит.
+     */
     public function prunable(): Builder
     {
-        // Запрос для очистка модели
-        return static::query()->where('created_at', '<=', now()->subDay());
+        return static::query()
+            ->whereNull('user_id')
+            ->where('created_at', '<=', now()->subDay());
     }
 
     // protected function pruning(): void
