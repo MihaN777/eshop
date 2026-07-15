@@ -54,6 +54,15 @@ class CartManager
         return implode(';', $optionValues);
     }
 
+    private function checkOwner(CartItem $cartItem): void
+    {
+        $cart = $this->get();
+
+        if (!$cart || $cartItem->cart_id != $cart->getKey()) {
+            abort(404);
+        }
+    }
+
     /**
      * @throws Exception
      */
@@ -98,15 +107,6 @@ class CartManager
         $this->forgetCache();
 
         return $cart;
-    }
-
-    private function checkOwner(CartItem $cartItem): void
-    {
-        $cart = $this->get();
-
-        if (!$cart || $cartItem->cart_id != $cart->getKey()) {
-            abort(404);
-        }
     }
 
     public function quantity(CartItem $cartItem, int $quantity = 1): void
