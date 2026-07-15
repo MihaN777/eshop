@@ -23,6 +23,11 @@ class CartItem extends Model
         'price' => PriceCast::class,
     ];
 
+    /**
+     * Изменение позиции метит корзину активной — по этому времени работает прунинг.
+     */
+    protected $touches = ['cart'];
+
     // Отношения
 
     public function cart(): BelongsTo
@@ -45,7 +50,7 @@ class CartItem extends Model
     public function amount(): Attribute
     {
         return Attribute::make(
-            get: fn() => Price::make(
+            get: fn () => Price::make(
                 $this->price->raw() * $this->quantity
             )
         );

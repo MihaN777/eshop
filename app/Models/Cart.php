@@ -33,12 +33,14 @@ class Cart extends Model
     /**
      * Чистятся только гостевые корзины: они живут ровно столько, сколько сессия.
      * Корзина, привязанная к аккаунту, переживает логаут и прунингу не подлежит.
+     * Считаем по активности (updated_at), а не по дате создания, иначе корзина
+     * гостя, который всё ещё ей пользуется, была бы удалена прямо под ним.
      */
     public function prunable(): Builder
     {
         return static::query()
             ->whereNull('user_id')
-            ->where('created_at', '<=', now()->subDay());
+            ->where('updated_at', '<=', now()->subDay());
     }
 
     // protected function pruning(): void
