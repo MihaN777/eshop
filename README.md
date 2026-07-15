@@ -14,7 +14,13 @@
 
 ```bash
 composer install
+```
+
+```bash
 php artisan eshop:install
+```
+
+```bash
 php artisan eshop:refresh
 ```
 
