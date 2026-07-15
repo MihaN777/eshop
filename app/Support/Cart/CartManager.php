@@ -25,10 +25,12 @@ class CartManager
     private function storedData(string $id): array
     {
         $data = [
-            'storage_id' => $id
+            'storage_id' => $id,
         ];
 
-        if (auth()->check()) $data['user_id'] = auth()->id();
+        if (auth()->check()) {
+            $data['user_id'] = auth()->id();
+        }
 
         return $data;
     }
@@ -53,10 +55,6 @@ class CartManager
     }
 
     /**
-     * @param Product $product
-     * @param int $quantity
-     * @param array $optionValues
-     * @return Cart
      * @throws Exception
      */
     public function add(Product $product, int $quantity = 1, array $optionValues = []): Cart
@@ -102,21 +100,30 @@ class CartManager
         return $cart;
     }
 
+    private function checkOwner(CartItem $cartItem): void
+    {
+        $cart = $this->get();
+
+        if (!$cart || $cartItem->cart_id != $cart->getKey()) {
+            abort(404);
+        }
+    }
+
     public function quantity(CartItem $cartItem, int $quantity = 1): void
     {
+        $this->checkOwner($cartItem);
         $cartItem->update(['quantity' => $quantity]);
         $this->forgetCache();
     }
 
     public function delete(CartItem $cartItem): void
     {
+        $this->checkOwner($cartItem);
         $cartItem->delete();
         $this->forgetCache();
     }
 
-
     /**
-     * @return void
      * @throws Exception
      */
     public function truncate(): void
@@ -145,7 +152,9 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (!$cart) return collect();
+        if (!$cart) {
+            return collect();
+        }
 
         return CartItem::query()
             ->with(['product.previewImage', 'optionValues.option'])
@@ -157,7 +166,9 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (!$cart) return collect();
+        if (!$cart) {
+            return collect();
+        }
 
         return $cart->cartItems;
     }
@@ -179,15 +190,11 @@ class CartManager
     public function get(): mixed
     {
         return Cache::remember($this->cacheKey(), now()->addHour(), function () {
-            $authCheck = auth()->check();
-
             return Cart::query()
                 ->with('cartItems')
-                // ->whereDate('expiration_at', '<=', now())
-                // ->where('storage_id', $this->identityStorage->get())
-                // ->when(auth()->check(), fn(Builder $query) => $query->orWhere('user_id', auth()->id()))
-                ->when(!$authCheck, fn(Builder $query) => $query->where('storage_id', $this->identityStorage->get()))
-                ->when($authCheck, fn(Builder $query) => $query->where('user_id', auth()->id()))
+                ->when(auth()->check(),
+                    fn(Builder $query) => $query->where('user_id', auth()->id()),
+                    fn(Builder $query) => $query->where('storage_id', $this->identityStorage->get()))
                 ->latest('id')
                 ->first() ?? false; // False для сохранения в кеш (null не сохряняется)
         });
