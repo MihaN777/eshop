@@ -21,6 +21,6 @@ class SessionRegeneratedListener
      */
     public function handle(SessionRegenerated $event): void
     {
-        cart()->updateStorageId($event->oldId, $event->newId);
+        cart()->handleSessionRegenerated($event->oldId, $event->newId);
     }
 }

@@ -18,26 +18,37 @@ class CartManager
 {
     public function __construct(
         protected CartIdentityStorageContract $identityStorage
-    )
+    ) {}
+
+    /**
+     * Единое правило владения для записи и чтения:
+     * авторизованный — по user_id, гость — по storage_id среди корзин без владельца.
+     */
+    private function cartQuery(): Builder
     {
+        return auth()->check()
+            ? Cart::query()->where('user_id', auth()->id())
+            : Cart::query()->whereNull('user_id')->where('storage_id', $this->identityStorage->get());
     }
 
-    private function storedData(string $id): array
+    private function ownerAttributes(): array
     {
-        $data = [
-            'storage_id' => $id,
-        ];
-
-        if (auth()->check()) {
-            $data['user_id'] = auth()->id();
-        }
-
-        return $data;
+        return auth()->check()
+            ? ['user_id' => auth()->id(), 'storage_id' => null]
+            : ['storage_id' => $this->identityStorage->get(), 'user_id' => null];
     }
 
+    /**
+     * Ключ кеша повторяет правило владения из cartQuery():
+     * иначе смена владельца при том же storage_id отдаёт чужой закешированный ответ.
+     */
     private function cacheKey(): string
     {
-        return str('cart_' . $this->identityStorage->get())
+        $owner = auth()->check()
+            ? 'user-'.auth()->id()
+            : 'guest-'.$this->identityStorage->get();
+
+        return str('cart-'.$owner)
             ->slug()
             ->value();
     }
@@ -58,7 +69,7 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (!$cart || $cartItem->cart_id != $cart->getKey()) {
+        if (! $cart || $cartItem->cart_id != $cart->getKey()) {
             abort(404);
         }
     }
@@ -71,10 +82,8 @@ class CartManager
         DB::beginTransaction();
 
         try {
-            $cart = Cart::query()
-                ->updateOrCreate([
-                    'storage_id' => $this->identityStorage->get(),
-                ], $this->storedData($this->identityStorage->get()));
+            $cart = $this->cartQuery()->first()
+                ?? Cart::query()->create($this->ownerAttributes());
 
             $cartItem = CartItem::query()
                 ->where('cart_id', $cart->getKey())
@@ -152,7 +161,7 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (!$cart) {
+        if (! $cart) {
             return collect();
         }
 
@@ -166,7 +175,7 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (!$cart) {
+        if (! $cart) {
             return collect();
         }
 
@@ -190,20 +199,74 @@ class CartManager
     public function get(): mixed
     {
         return Cache::remember($this->cacheKey(), now()->addHour(), function () {
-            return Cart::query()
+            return $this->cartQuery()
                 ->with('cartItems')
-                ->when(auth()->check(),
-                    fn(Builder $query) => $query->where('user_id', auth()->id()),
-                    fn(Builder $query) => $query->where('storage_id', $this->identityStorage->get()))
-                ->latest('id')
                 ->first() ?? false; // False для сохранения в кеш (null не сохряняется)
         });
     }
 
-    public function updateStorageId(string $oldId, string $newId): void
+    /**
+     * Логин/регистрация — гостевая корзина сливается в корзину пользователя.
+     * Прочая ротация сессии (в т.ч. логаут) — гостевая корзина переезжает на новый id,
+     * корзина пользователя остаётся за аккаунтом и гостю не достаётся.
+     */
+    public function handleSessionRegenerated(string $oldStorageId, string $newStorageId): void
+    {
+        auth()->check()
+            ? $this->mergeGuestCartIntoUser($oldStorageId)
+            : $this->moveGuestCart($oldStorageId, $newStorageId);
+
+        $this->forgetCache();
+    }
+
+    private function moveGuestCart(string $oldStorageId, string $newStorageId): void
     {
         Cart::query()
-            ->where('storage_id', $oldId)
-            ->update($this->storedData($newId));
+            ->whereNull('user_id')
+            ->where('storage_id', $oldStorageId)
+            ->update(['storage_id' => $newStorageId]);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    private function mergeGuestCartIntoUser(string $guestStorageId): void
+    {
+        $guestCart = Cart::query()
+            ->whereNull('user_id')
+            ->where('storage_id', $guestStorageId)
+            ->first();
+
+        if (! $guestCart) {
+            return;
+        }
+
+        DB::transaction(function () use ($guestCart) {
+            $userCart = Cart::query()->firstOrCreate(
+                ['user_id' => auth()->id()],
+                ['storage_id' => null]
+            );
+
+            foreach ($guestCart->cartItems as $guestItem) {
+                $userItem = CartItem::query()
+                    ->where('cart_id', $userCart->getKey())
+                    ->where('product_id', $guestItem->product_id)
+                    ->where('string_option_values', $guestItem->string_option_values)
+                    ->first();
+
+                if ($userItem) {
+                    $userItem->quantity += $guestItem->quantity;
+                    $userItem->save();
+
+                    $guestItem->optionValues()->detach();
+                    $guestItem->delete();
+                } else {
+                    $guestItem->cart_id = $userCart->getKey();
+                    $guestItem->save();
+                }
+            }
+
+            $guestCart->delete();
+        });
     }
 }
