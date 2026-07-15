@@ -8,6 +8,7 @@ use App\Models\DeliveryType;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use App\Models\User;
 use App\Support\Cart\CartManager;
 use App\Support\Cart\Contracts\CartIdentityStorageContract;
 use Closure;
@@ -57,12 +58,31 @@ trait CreatesOrderData
     }
 
     /**
+     * Позиция в корзине, принадлежащей аккаунту (storage_id = null).
+     */
+    protected function seedUserCartItem(Product $product, int $quantity, User $user, string $options = ''): CartItem
+    {
+        $cart = Cart::query()->firstOrCreate(
+            ['user_id' => $user->getKey()],
+            ['storage_id' => null]
+        );
+
+        return CartItem::query()->create([
+            'cart_id' => $cart->getKey(),
+            'product_id' => $product->getKey(),
+            'string_option_values' => $options,
+            'price' => $product->price,
+            'quantity' => $quantity,
+        ]);
+    }
+
+    /**
      * Заглушку для Pipeline.
      * Возвращает замыкание следующего шага Pipeline.
      */
     private function pass(): Closure
     {
-        return fn(Order $order) => $order;
+        return fn (Order $order) => $order;
     }
 
     /**
@@ -71,11 +91,10 @@ trait CreatesOrderData
      */
     protected function bindFixedCartStorage(string $storageId): void
     {
-        $this->app->singleton(CartManager::class, fn() => new CartManager(
-            new class($storageId) implements CartIdentityStorageContract {
-                public function __construct(private string $id)
-                {
-                }
+        $this->app->singleton(CartManager::class, fn () => new CartManager(
+            new class($storageId) implements CartIdentityStorageContract
+            {
+                public function __construct(private string $id) {}
 
                 public function get(): string
                 {
