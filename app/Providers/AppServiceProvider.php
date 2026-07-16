@@ -28,11 +28,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Отключить отложенную загрузку
-        // Когда попытаетесь присвоить значение, который не был добавлен в массив fillable модели - exception
-        // Контроль null при агригации данных из БД
         // Model::preventLazyLoading(!app()->isProduction());
-        // Model::preventSilentlyDiscardingAttributes(!app()->isProduction());
-        Model::shouldBeStrict(!app()->isProduction());
+
+        // Exception когда пытаещся присвоить значение в поле, которое не было добавлено в массив fillable модели
+        Model::preventSilentlyDiscardingAttributes(!app()->isProduction());
+
+        // Предотвращение доступа к отсутствующим атрибутам в восстановленных моделях (контроль null при агригации данных)
+        Model::preventAccessingMissingAttributes(!app()->isProduction());
 
         // Мониторинг времени выполнения запроса
         //        DB::listen(function ($query) {
