@@ -53,7 +53,7 @@ class CartManager
             ->value();
     }
 
-    private function forgetCache(): string
+    private function forgetCache(): bool
     {
         return Cache::forget($this->cacheKey());
     }
