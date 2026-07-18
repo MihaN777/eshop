@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use Carbon\CarbonInterval;
+use Illuminate\Auth\Events\Lockout;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -64,8 +66,22 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(10)
-                ->by($request->ip());
+            $email = $this->throttledEmail($request);
+
+            $limits = [
+                Limit::perMinute(10)
+                    ->by('ip|' . $request->ip())
+                    // Сallback ответа при превышении лимита (иначе стандартный 429 ответ)
+                    ->response(fn(Request $request, array $headers) => $this->lockoutResponse($request, $headers))
+            ];
+
+            if ($email !== '') {
+                $limits[] = Limit::perMinute(20)
+                    ->by('email|' . $email)
+                    ->response(fn(Request $request, array $headers) => $this->lockoutResponse($request, $headers));
+            }
+
+            return $limits;
         });
 
         RateLimiter::for('api', function (Request $request) {
@@ -77,5 +93,45 @@ class AppServiceProvider extends ServiceProvider
         Password::defaults(function () {
             return Password::min(8)->max(255);
         });
+    }
+
+    /**
+     * Ключ лимита по аккаунту для маршрутов авторизации.
+     */
+    private function throttledEmail(Request $request): string
+    {
+        $email = $request->input('email');
+
+        // Лимитер отрабатывает до валидации, поэтому здесь сырой ввод: email
+        // может прийти массивом. Приведение такого значения к строке дало бы
+        // общее для всех ограничение 'Array', поэтому ключа по аккаунту тогда нет.
+        if (!is_string($email)) {
+            return '';
+        }
+
+        // Без нормализации ' Test@VK.com ' и 'test@vk.com' дают разные ключи,
+        // и лимит по аккаунту обходится одним пробелом в поле.
+        return str($email)
+            ->squish()
+            ->lower()
+            ->transliterate()
+            ->value();
+    }
+
+    /**
+     * Хук, срабатывающий на превышении лимита: отсюда шлём
+     * Lockout, чтобы у блокировок был сигнал для алертинга.
+     *
+     * @param array{'Retry-After'?: int} $headers
+     */
+    private function lockoutResponse(Request $request, array $headers): RedirectResponse
+    {
+        event(new Lockout($request));
+
+        $seconds = $headers['Retry-After'] ?? 60;
+
+        return back()
+            ->withErrors(['email' => "Слишком много попыток. Повторите через {$seconds} сек."])
+            ->onlyInput('email');
     }
 }
