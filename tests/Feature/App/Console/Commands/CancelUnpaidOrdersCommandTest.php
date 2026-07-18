@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\App\Console\Commands;
 
+use App\Console\Commands\CancelUnpaidOrdersCommand;
 use App\Models\DeliveryType;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -89,6 +90,28 @@ class CancelUnpaidOrdersCommandTest extends TestCase
         $this->artisan('eshop:cancel-unpaid-orders', ['--minutes' => 30])
             ->assertSuccessful();
 
+        $this->assertSame('pending', $order->fresh()->status->value());
+        $this->assertSame(5, $product->fresh()->quantity);
+    }
+
+    /**
+     * Гонка отмена <-> вебхук: платёж стал оплаченным уже после выборки заказов на отмену.
+     * Перепроверка под локом видит оплаченный платёж и не отменяет заказ.
+     */
+    public function test_attempt_cancel_skips_order_with_paid_payment_found_under_lock(): void
+    {
+        $product = Product::factory()->create(['quantity' => 5]);
+        $order = $this->makeOrder('pending', $product, 3, now()->subHour());
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'provider' => self::TEST_PROVIDER,
+            'status' => 'paid',
+        ]);
+
+        $cancelled = (new CancelUnpaidOrdersCommand)->attemptCancel($order->id);
+
+        $this->assertFalse($cancelled);
         $this->assertSame('pending', $order->fresh()->status->value());
         $this->assertSame(5, $product->fresh()->quantity);
     }
