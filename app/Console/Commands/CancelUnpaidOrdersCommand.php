@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Domains\Order\Enums\OrderStatuses;
+use App\Domains\Order\Enums\PaymentStatuses;
 use App\Domains\Order\States\CancelledOrderState;
 use App\Models\Order;
 use App\Models\Product;
@@ -30,28 +31,9 @@ class CancelUnpaidOrdersCommand extends Command
 
         foreach ($orderIds as $orderId) {
             try {
-                DB::transaction(function () use ($orderId, &$cancelled) {
-                    $order = Order::query()
-                        ->with('orderItems')
-                        ->lockForUpdate()
-                        ->find($orderId);
-
-                    // Повторная проверка под блокировкой: мог оплатиться параллельно
-                    if (!$order || $order->status->value() !== OrderStatuses::Pending->value) {
-                        return;
-                    }
-
-                    // Возврат остатков
-                    foreach ($order->orderItems as $item) {
-                        Product::query()
-                            ->whereKey($item->product_id)
-                            ->increment('quantity', $item->quantity);
-                    }
-
-                    $order->status->transitionTo(new CancelledOrderState($order));
-
+                if ($this->attemptCancel($orderId)) {
                     $cancelled++;
-                });
+                }
             } catch (Throwable $e) {
                 report($e);
                 $this->error("Заказ #{$orderId}: {$e->getMessage()}");
@@ -61,5 +43,41 @@ class CancelUnpaidOrdersCommand extends Command
         $this->info("Отменено заказов: {$cancelled}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Отменяет один заказ под блокировкой строки и возвращает остатки.
+     * Возвращает true, если заказ был отменён.
+     */
+    public function attemptCancel(int $orderId): bool
+    {
+        return DB::transaction(function () use ($orderId) {
+            $order = Order::query()
+                ->with('orderItems')
+                ->lockForUpdate()
+                ->find($orderId);
+
+            // Перепроверка под локом. Статуса заказа недостаточно: вебхук мог пометить платёж
+            // оплаченным между pluck и захватом лока, не переведя заказ (расхождение сумм,
+            // частичная оплата). Наличие оплаченного платежа — авторитетный признак оплаты.
+            if (
+                ! $order
+                || $order->status->value() !== OrderStatuses::Pending->value
+                || $order->payments()->where('status', PaymentStatuses::Paid->value)->exists()
+            ) {
+                return false;
+            }
+
+            // Возврат остатков
+            foreach ($order->orderItems as $item) {
+                Product::query()
+                    ->whereKey($item->product_id)
+                    ->increment('quantity', $item->quantity);
+            }
+
+            $order->status->transitionTo(new CancelledOrderState($order));
+
+            return true;
+        });
     }
 }

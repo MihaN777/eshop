@@ -2,6 +2,7 @@
 
 namespace App\Support\Payment;
 
+use App\Domains\Order\Enums\OrderStatuses;
 use App\Domains\Order\Enums\PaymentStatuses;
 use App\Domains\Order\States\PaidOrderState;
 use App\Domains\Order\States\Payment\PaidPaymentState;
@@ -167,63 +168,76 @@ class PaymentSystem
         $paymentHistory->save();
 
         try {
-            DB::beginTransaction();
+            // Транзакция с ретраем при дедлоке. Внутри берём тот же лок на строку
+            // заказа, что и CancelUnpaidOrdersCommand, — иначе оплата и автоотмена
+            // не взаимоисключаются и оплаченный заказ можно отменить.
+            $payment = DB::transaction(function () {
+                $payment = Payment::query()
+                    ->where('provider', self::$provider->providerName())
+                    ->when(isset(self::$provider->getData()->order_id),
+                        // True
+                        function ($query) {
+                            return $query->where('order_id', self::$provider->getData()->order_id);
+                        },
+                        // False
+                        function ($query) {
+                            return $query->where('transaction_id', self::$provider->getData()->transaction_id);
+                        }
+                    )
+                    ->latest('id')
+                    ->first();
 
-            $payment = Payment::query()
-                ->with('order')
-                ->where('provider', self::$provider->providerName())
-                ->when(isset(self::$provider->getData()->order_id),
-                    // True
-                    function ($query) {
-                        return $query->where('order_id', self::$provider->getData()->order_id);
-                    },
-                    // False
-                    function ($query) {
-                        return $query->where('transaction_id', self::$provider->getData()->transaction_id);
+                if (!$payment) {
+                    throw PaymentProcessException::paymentModelsNotFound();
+                }
+
+                // Лок на заказ держится до конца транзакции: пока он наш,
+                // команда отмены не сможет отменить заказ и вернуть остатки.
+                $order = Order::query()
+                    ->lockForUpdate()
+                    ->find($payment->order_id);
+
+                if (!$order) {
+                    throw PaymentProcessException::paymentModelsNotFound();
+                }
+
+                // Статус платежа перечитываем уже под локом: параллельный вебхук
+                // (ретрай платежного провайдера) мог оплатить его между выборкой и захватом лока.
+                $payment->refresh();
+
+                // Идемпотентность вебхука: повторное уведомление по уже оплаченному
+                // платежу не меняет состояние (переход из Paid запрещён) и не даёт 500.
+                if ($payment->status->value() === PaymentStatuses::Paid->value) {
+                    return $payment;
+                }
+
+                if (self::$provider->paid()) {
+                    $providerAmount = self::$provider->getData()->amount;
+
+                    // Деньги получены — платёж помечаем оплаченным в любом случае
+                    // (нужно для сверки и возможного возврата).
+                    $payment->status->transitionTo(new PaidPaymentState($payment));
+                    $payment->amount = $providerAmount?->raw();
+                    $payment->save();
+
+                    if ($order->status->value() === OrderStatuses::Pending->value) {
+                        if ($providerAmount?->priceEqualTo($order->amount)) {
+                            $order->status->transitionTo(new PaidOrderState($order));
+                        }
+                    } else {
+                        // Заказ уже не Pending (например, отменён по гонке с автоотменой):
+                        // оплату не откатываем, заказ не трогаем, но сигналим об аномалии.
+                        report("Оплата по заказу #{$order->id} получена, но заказ в статусе «{$order->status->value()}» — требуется ручная обработка.");
                     }
-                )
-                ->latest('id')
-                ->first();
-
-            $order = $payment?->order;
-
-            if (!$payment || !$order) {
-                throw PaymentProcessException::paymentModelsNotFound();
-            }
-
-            // Идемпотентность вебхука: повторное уведомление по уже оплаченному
-            // платежу не должно повторно менять состояние (переход состояние из Paid запрещён) и давать 500.
-            if ($payment->status->value() === PaymentStatuses::Paid->value) {
-                DB::commit();
-
-                if (is_callable(self::$onSuccess)) {
-                    call_user_func(self::$onSuccess, $payment);
                 }
 
-                return self::$provider;
-            }
-
-            if (self::$provider->paid()) {
-                $providerAmount = self::$provider->getData()->amount;
-
-                $payment->status->transitionTo(new PaidPaymentState($payment));
-                $payment->amount = $providerAmount?->raw();
-                $payment->save();
-
-                if ($providerAmount?->priceEqualTo($order->amount)) {
-                    $order->status->transitionTo(new PaidOrderState($order));
-                }
-            }
-
-            DB::commit();
+                return $payment;
+            }, 3);
 
             if (is_callable(self::$onSuccess)) {
                 call_user_func(self::$onSuccess, $payment);
             }
-
         } catch (Throwable $e) {
-            DB::rollBack();
-
             $errorMsg = self::$provider->errorMessage() ?? $e->getMessage();
 
             if (is_callable(self::$onError)) {
