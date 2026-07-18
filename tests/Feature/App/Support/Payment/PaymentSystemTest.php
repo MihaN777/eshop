@@ -10,6 +10,7 @@ use App\Support\Payment\Exceptions\PaymentProcessException;
 use App\Support\Payment\PaymentSystem;
 use App\Support\ValueObjects\Price;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Tests\Support\Payment\FakePaymentProvider;
 use Tests\TestCase;
 
@@ -56,7 +57,7 @@ class PaymentSystemTest extends TestCase
     {
         $order = $this->makeOrder(100);
 
-        PaymentSystem::setProvider(new FakePaymentProvider());
+        PaymentSystem::setProvider(new FakePaymentProvider);
 
         $provider = PaymentSystem::create($order);
 
@@ -77,7 +78,7 @@ class PaymentSystemTest extends TestCase
         $order = $this->makeOrder(100, 'pending');
         $payment = $this->makePayment($order, 'pending');
 
-        $fake = new FakePaymentProvider();
+        $fake = new FakePaymentProvider;
         $fake->validates = true;
         $fake->isPaid = true;
         $fake->notifyOrderId = $order->id;
@@ -103,7 +104,7 @@ class PaymentSystemTest extends TestCase
         $order = $this->makeOrder(100, 'paid');
         $payment = $this->makePayment($order, 'paid');
 
-        $fake = new FakePaymentProvider();
+        $fake = new FakePaymentProvider;
         $fake->validates = true;
         $fake->isPaid = true;
         $fake->notifyOrderId = $order->id;
@@ -121,7 +122,7 @@ class PaymentSystemTest extends TestCase
      */
     public function test_throws_exception_on_failed_validation(): void
     {
-        $fake = new FakePaymentProvider();
+        $fake = new FakePaymentProvider;
         $fake->validates = false;
         PaymentSystem::setProvider($fake);
 
@@ -143,7 +144,7 @@ class PaymentSystemTest extends TestCase
         $order = $this->makeOrder(100, 'pending');
         $payment = $this->makePayment($order, 'pending');
 
-        $fake = new FakePaymentProvider();
+        $fake = new FakePaymentProvider;
         $fake->validates = true;
         $fake->isPaid = true;
         $fake->notifyOrderId = $order->id;
@@ -154,5 +155,34 @@ class PaymentSystemTest extends TestCase
 
         $this->assertSame('paid', $payment->fresh()->status->value());
         $this->assertSame('pending', $order->fresh()->status->value());
+    }
+
+    /**
+     * Аномалия гонки "отмена <-> вебхук": заказ уже отменён (автоотмена успела раньше), но пришла
+     * оплата. Платёж помечается оплаченным (деньги получены), заказ остаётся
+     * отменённым и не откатывается, а факт фиксируется через report() для ручной обработки.
+     */
+    public function test_paid_webhook_for_cancelled_order_keeps_order_cancelled_and_reports(): void
+    {
+        Exceptions::fake();
+
+        $order = $this->makeOrder(100, 'cancelled');
+        $payment = $this->makePayment($order, 'pending');
+
+        $fake = new FakePaymentProvider;
+        $fake->validates = true;
+        $fake->isPaid = true;
+        $fake->notifyOrderId = $order->id;
+        $fake->notifyAmount = Price::make(100);
+        PaymentSystem::setProvider($fake);
+
+        PaymentSystem::update();
+
+        $this->assertSame('paid', $payment->fresh()->status->value());
+        $this->assertSame('cancelled', $order->fresh()->status->value());
+
+        Exceptions::assertReported(
+            fn (\Exception $e) => str_contains($e->getMessage(), "#{$order->id}")
+        );
     }
 }
