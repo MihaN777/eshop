@@ -15,6 +15,7 @@ use App\Support\Payment\Exceptions\PaymentProviderException;
 use App\Support\Payment\Traits\PaymentEvents;
 use Closure;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class PaymentSystem
@@ -227,7 +228,10 @@ class PaymentSystem
                     } else {
                         // Заказ уже не Pending (например, отменён по гонке с автоотменой):
                         // оплату не откатываем, заказ не трогаем, но сигналим об аномалии.
-                        report("Оплата по заказу #{$order->id} получена, но заказ в статусе «{$order->status->value()}» — требуется ручная обработка.");
+                        Log::channel('payment')->warning(
+                            "Оплата по заказу #{$order->id} получена, но заказ в статусе «{$order->status->value()}» — требуется ручная обработка.",
+                            ['order_id' => $order->id, 'payment_id' => $payment->id]
+                        );
                     }
                 }
 

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CancelUnpaidOrdersCommand extends Command
@@ -19,12 +20,12 @@ class CancelUnpaidOrdersCommand extends Command
 
     public function handle(): int
     {
-        $threshold = now()->subMinutes((int) $this->option('minutes'));
+        $threshold = now()->subMinutes((int)$this->option('minutes'));
 
         $orderIds = Order::query()
             ->where('status', OrderStatuses::Pending->value)
             ->where('created_at', '<=', $threshold)
-            ->whereDoesntHave('payments', fn ($query) => $query->where('status', 'paid'))
+            ->whereDoesntHave('payments', fn($query) => $query->where('status', 'paid'))
             ->pluck('id');
 
         $cancelled = 0;
@@ -35,7 +36,7 @@ class CancelUnpaidOrdersCommand extends Command
                     $cancelled++;
                 }
             } catch (Throwable $e) {
-                report($e);
+                Log::channel('payment')->error('CancelUnpaidOrdersCommand: ' . $e->getMessage());
                 $this->error("Заказ #{$orderId}: {$e->getMessage()}");
             }
         }
@@ -61,7 +62,7 @@ class CancelUnpaidOrdersCommand extends Command
             // оплаченным между pluck и захватом лока, не переведя заказ (расхождение сумм,
             // частичная оплата). Наличие оплаченного платежа — авторитетный признак оплаты.
             if (
-                ! $order
+                !$order
                 || $order->status->value() !== OrderStatuses::Pending->value
                 || $order->payments()->where('status', PaymentStatuses::Paid->value)->exists()
             ) {
