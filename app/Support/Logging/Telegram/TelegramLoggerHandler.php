@@ -2,22 +2,23 @@
 
 namespace App\Support\Logging\Telegram;
 
-use App\Services\Telegram\TelegramBotApi;
-use Illuminate\Support\Facades\Log;
+use App\Jobs\SendTelegramLogJob;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use Monolog\LogRecord;
+use Throwable;
 
 class TelegramLoggerHandler extends AbstractProcessingHandler
 {
     protected int $chatId;
+
     protected string $token;
 
     public function __construct($config)
     {
         $this->chatId = (int)$config['chat_id'];
         $this->token = $config['token'];
-        $level = Logger::toMonologLevel($config["level"]);
+        $level = Logger::toMonologLevel($config['level']);
 
         parent::__construct($level);
     }
@@ -27,13 +28,14 @@ class TelegramLoggerHandler extends AbstractProcessingHandler
         $date = now()->format('Y-m-d H:i:s');
         $level = strtoupper($record->level->name ?? 'UNDEFINED_LEVEL');
 
-        // Дублируем ошибку в лог-файл
-        // if ($level === 'ERROR') Log::error($record->message);
+        $message = "[{$date}] {$level}: {$record->message}";
 
-        TelegramBotApi::sendMessage(
-            $this->token,
-            $this->chatId,
-            "[{$date}] {$level}: {$record->message}"
-        );
+        try {
+            // afterCommit() гарантирует, что при откате транзакции ложный алерт не уйдёт,
+            // а воркер не подхватит джобу раньше коммита; вне транзакции диспатч идёт сразу.
+            SendTelegramLogJob::dispatch($this->token, $this->chatId, $message)->afterCommit();
+        } catch (Throwable) {
+            // Недоступность очереди не ломае основной поток и запись в остальные каналы стека.
+        }
     }
 }
