@@ -137,6 +137,12 @@ return [
         ],
 
         'payment' => [
+            'driver' => 'stack',
+            'channels' => ['payment_daily', 'telegram'],
+            'ignore_exceptions' => true,  // Сбой отправки telegram не должен ломать запись в файл
+        ],
+
+        'payment_daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/payment/payment.log'),
             'level' => env('LOG_PAYMENT_LEVEL', 'debug'),
