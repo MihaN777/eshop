@@ -10,7 +10,7 @@ use App\Support\Payment\Exceptions\PaymentProcessException;
 use App\Support\Payment\PaymentSystem;
 use App\Support\ValueObjects\Price;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Log;
 use Tests\Support\Payment\FakePaymentProvider;
 use Tests\TestCase;
 
@@ -160,14 +160,17 @@ class PaymentSystemTest extends TestCase
     /**
      * Аномалия гонки "отмена <-> вебхук": заказ уже отменён (автоотмена успела раньше), но пришла
      * оплата. Платёж помечается оплаченным (деньги получены), заказ остаётся
-     * отменённым и не откатывается, а факт фиксируется через report() для ручной обработки.
+     * отменённым и не откатывается, а факт пишется в отдельный лог платежей для ручной обработки.
      */
-    public function test_paid_webhook_for_cancelled_order_keeps_order_cancelled_and_reports(): void
+    public function test_paid_webhook_for_cancelled_order_keeps_order_cancelled_and_logs(): void
     {
-        Exceptions::fake();
-
         $order = $this->makeOrder(100, 'cancelled');
         $payment = $this->makePayment($order, 'pending');
+
+        Log::shouldReceive('channel')->with('payment')->andReturnSelf();
+        Log::shouldReceive('warning')
+            ->once()
+            ->withArgs(fn(string $message) => str_contains($message, "#{$order->id}"));
 
         $fake = new FakePaymentProvider;
         $fake->validates = true;
@@ -180,9 +183,5 @@ class PaymentSystemTest extends TestCase
 
         $this->assertSame('paid', $payment->fresh()->status->value());
         $this->assertSame('cancelled', $order->fresh()->status->value());
-
-        Exceptions::assertReported(
-            fn (\Exception $e) => str_contains($e->getMessage(), "#{$order->id}")
-        );
     }
 }
