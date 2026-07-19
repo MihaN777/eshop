@@ -136,6 +136,14 @@ return [
             'token' => env('TELEGRAM_LOGGER_BOT_TOKEN', ''),
         ],
 
+        'payment' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/payment/payment.log'),
+            'level' => env('LOG_PAYMENT_LEVEL', 'debug'),
+            'days' => env('LOG_PAYMENT_DAYS', 90),
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];
