@@ -13,6 +13,7 @@ class OrderControllerTest extends TestCase
     use CreatesOrderData;
 
     private const string CART = 'test-cart';
+    private const string TEST_PROVIDER = 'fake';
 
     private function customerPayload(): array
     {
@@ -85,7 +86,7 @@ class OrderControllerTest extends TestCase
         $delivery = $this->makeDeliveryType();
         $payment = $this->makePaymentMethod(redirectToPay: true);
 
-        $response = $this->post(route('order.handle'), [
+        $response = $this->post(route('order.handle', ['provider' => self::TEST_PROVIDER]), [
             'customer' => $this->customerPayload(),
             'delivery_type_id' => $delivery->id,
             'payment_method_id' => $payment->id,

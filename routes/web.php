@@ -28,7 +28,7 @@ Route::prefix('cart')->group(function () {
 // Заказ
 Route::prefix('order')->group(function () {
     Route::get('/', [OrderController::class, 'order'])->name('order');
-    Route::post('/handle', [OrderController::class, 'handle'])->name('order.handle');
+    Route::post('/handle/{provider?}', [OrderController::class, 'handle'])->name('order.handle');
 });
 
 // Оплата

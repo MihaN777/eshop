@@ -22,6 +22,7 @@ use App\Models\PaymentMethod;
 use App\Support\Exceptions\ProjectException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Throwable;
 
 class OrderController extends Controller
 {
@@ -42,6 +43,7 @@ class OrderController extends Controller
         OrderHandleRequest         $request,
         OrderCreateAction          $orderCreateAction,
         InitiateOrderPaymentAction $initiateOrderPayment,
+        string                     $provider = null
     ): RedirectResponse
     {
         // Создание пользователя и заказа
@@ -80,10 +82,14 @@ class OrderController extends Controller
             ->run();
 
         // Инициация оплаты — ВНЕ транзакции (внешний вызов уже после COMMIT)
-        $paymentUrl = $initiateOrderPayment($order, $request->get('provider', 'fake'));
-
-        // Перенаправление на оплату
-        if ($paymentUrl) return redirect($paymentUrl);
+        try {
+            if ($paymentUrl = $initiateOrderPayment($order, $provider)) return redirect($paymentUrl);
+        } catch (Throwable $e) {
+            // Заказ уже создан и переведён в pending (остаток зарезервирован).
+            // Не откатываем его — оплату можно повторить.
+            flash()->alert('Заказ создан, но не удалось перейти к оплате. Попробуйте оплатить позже.');
+            report($e->getMessage());
+        }
 
         return redirect()->route('catalog');
     }
