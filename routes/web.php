@@ -41,6 +41,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile/delete', [ProfileController::class, 'delete'])->name('profile.delete');
 });
 
-require __DIR__ . '/admin.php';
 require __DIR__ . '/auth_custom.php';
-// require __DIR__ . '/auth.php';
