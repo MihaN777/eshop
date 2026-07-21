@@ -23,85 +23,6 @@ class CartManager
     {
     }
 
-    /**
-     * Единое правило владения для записи и чтения:
-     * авторизованный — по user_id, гость — по storage_id среди корзин без владельца.
-     */
-    private function cartQuery(): Builder
-    {
-        return auth()->check()
-            ? Cart::query()->where('user_id', auth()->id())
-            : Cart::query()->whereNull('user_id')->where('storage_id', $this->identityStorage->get());
-    }
-
-    private function ownerAttributes(): array
-    {
-        return auth()->check()
-            ? ['user_id' => auth()->id(), 'storage_id' => null]
-            : ['storage_id' => $this->identityStorage->get(), 'user_id' => null];
-    }
-
-    /**
-     * Ключ кеша повторяет правило владения из cartQuery():
-     * иначе смена владельца при том же storage_id отдаёт чужой закешированный ответ.
-     */
-    private function cacheKey(): string
-    {
-        $owner = auth()->check()
-            ? 'user-' . auth()->id()
-            : 'guest-' . $this->identityStorage->get();
-
-        return str('cart-' . $owner)
-            ->slug()
-            ->value();
-    }
-
-    private function forgetCache(): bool
-    {
-        return Cache::forget($this->cacheKey());
-    }
-
-    private function stringedOptionValues(array $optionValues = []): string
-    {
-        sort($optionValues);
-
-        return implode(';', $optionValues);
-    }
-
-    private function checkOwner(CartItem $cartItem): void
-    {
-        $cart = $this->get();
-
-        if (!$cart || $cartItem->cart_id != $cart->getKey()) {
-            abort(404);
-        }
-    }
-
-    /**
-     * Потолок количества одного товара в корзине.
-     *
-     * Считаем сумму по ВСЕМ строкам этого товара: разные наборы опций дают разные
-     * cart_items, поэтому ограничение на одну строку обходится добавлением вариантов.
-     *
-     * @param CartItem|null $excluding строка, чьё количество заменяется (для quantity())
-     *
-     * @throws Exception
-     */
-    private function checkQuantityLimit(Product $product, int $quantity, ?CartItem $excluding = null): void
-    {
-        $limit = $product->maxOrderQuantity();
-
-        $alreadyInCart = $this->cartItems()
-            ->where('product_id', $product->getKey())
-            ->when($excluding, fn(Collection $cartItems) => $cartItems->where('id', '!=', $excluding->getKey()))
-            ->sum('quantity');
-
-        if ($alreadyInCart + $quantity > $limit) {
-            $this->errorMessage = "Больше {$limit} шт. одного товара заказать нельзя.";
-            throw new Exception($this->errorMessage);
-        }
-    }
-
     public function getErrorMessage(): string
     {
         return $this->errorMessage;
@@ -259,6 +180,51 @@ class CartManager
         $this->forgetCache();
     }
 
+    private function ownerAttributes(): array
+    {
+        return auth()->check()
+            ? ['user_id' => auth()->id(), 'storage_id' => null]
+            : ['storage_id' => $this->identityStorage->get(), 'user_id' => null];
+    }
+
+    /**
+     * Единое правило владения для записи и чтения:
+     * авторизованный — по user_id, гость — по storage_id среди корзин без владельца.
+     */
+    private function cartQuery(): Builder
+    {
+        return auth()->check()
+            ? Cart::query()->where('user_id', auth()->id())
+            : Cart::query()->whereNull('user_id')->where('storage_id', $this->identityStorage->get());
+    }
+
+    /**
+     * Ключ кеша повторяет правило владения из cartQuery():
+     * иначе смена владельца при том же storage_id отдаёт чужой закешированный ответ.
+     */
+    private function cacheKey(): string
+    {
+        $owner = auth()->check()
+            ? 'user-' . auth()->id()
+            : 'guest-' . $this->identityStorage->get();
+
+        return str('cart-' . $owner)
+            ->slug()
+            ->value();
+    }
+
+    private function forgetCache(): bool
+    {
+        return Cache::forget($this->cacheKey());
+    }
+
+    private function stringedOptionValues(array $optionValues = []): string
+    {
+        sort($optionValues);
+
+        return implode(';', $optionValues);
+    }
+
     private function moveGuestCart(string $oldStorageId, string $newStorageId): void
     {
         Cart::query()
@@ -308,5 +274,39 @@ class CartManager
 
             $guestCart->delete();
         });
+    }
+
+    private function checkOwner(CartItem $cartItem): void
+    {
+        $cart = $this->get();
+
+        if (!$cart || $cartItem->cart_id != $cart->getKey()) {
+            abort(404);
+        }
+    }
+
+    /**
+     * Потолок количества одного товара в корзине.
+     *
+     * Считаем сумму по ВСЕМ строкам этого товара: разные наборы опций дают разные
+     * cart_items, поэтому ограничение на одну строку обходится добавлением вариантов.
+     *
+     * @param CartItem|null $excluding строка, чьё количество заменяется (для quantity())
+     *
+     * @throws Exception
+     */
+    private function checkQuantityLimit(Product $product, int $quantity, ?CartItem $excluding = null): void
+    {
+        $limit = $product->maxOrderQuantity();
+
+        $alreadyInCart = $this->cartItems()
+            ->where('product_id', $product->getKey())
+            ->when($excluding, fn(Collection $cartItems) => $cartItems->where('id', '!=', $excluding->getKey()))
+            ->sum('quantity');
+
+        if ($alreadyInCart + $quantity > $limit) {
+            $this->errorMessage = "Больше {$limit} шт. одного товара заказать нельзя.";
+            throw new Exception($this->errorMessage);
+        }
     }
 }
