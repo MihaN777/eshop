@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Support\Cart\Contracts\CartIdentityStorageContract;
+use App\Support\Cart\Exceptions\CartManagerException;
 use App\Support\ValueObjects\Price;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,15 +18,9 @@ use Throwable;
 class CartManager
 {
     public function __construct(
-        protected CartIdentityStorageContract $identityStorage,
-        private string                        $errorMessage = ''
+        protected CartIdentityStorageContract $identityStorage
     )
     {
-    }
-
-    public function getErrorMessage(): string
-    {
-        return $this->errorMessage;
     }
 
     /**
@@ -293,7 +288,7 @@ class CartManager
      *
      * @param CartItem|null $excluding строка, чьё количество заменяется (для quantity())
      *
-     * @throws Exception
+     * @throws CartManagerException
      */
     private function checkQuantityLimit(Product $product, int $quantity, ?CartItem $excluding = null): void
     {
@@ -305,8 +300,7 @@ class CartManager
             ->sum('quantity');
 
         if ($alreadyInCart + $quantity > $limit) {
-            $this->errorMessage = "Больше {$limit} шт. одного товара заказать нельзя.";
-            throw new Exception($this->errorMessage);
+            throw CartManagerException::exceededQuantityLimit($limit);
         }
     }
 }

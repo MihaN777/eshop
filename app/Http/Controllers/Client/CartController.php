@@ -7,6 +7,7 @@ use App\Http\Requests\Client\CartAddRequest;
 use App\Http\Requests\Client\CartQuantityRequest;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Support\Cart\Exceptions\CartManagerException;
 use App\Support\Exceptions\ProjectException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -30,13 +31,10 @@ class CartController extends Controller
                 $request->get('quantity', 1),
                 $request->get('options', [])
             );
+        } catch (CartManagerException $e) {
+            throw new ProjectException($e->getMessage());
         } catch (Throwable $e) {
-            $errorMessage = cart()->getErrorMessage();
-
-            throw new ProjectException(
-                !empty($errorMessage) ? $errorMessage : 'Не удалось добавить товар в корзину',
-                !empty($errorMessage) ? '' : $e->getMessage()
-            );
+            throw new ProjectException('Не удалось добавить товар в корзину', $e->getMessage());
         }
 
         flash()->info('Товар добавлен в корзину');
@@ -52,13 +50,8 @@ class CartController extends Controller
             // abort(404) из проверки владельца cartItem не подменяем на 302:
             // иначе по коду ответа видно существование чужой корзины (IDOR).
             throw $e;
-        } catch (Throwable $e) {
-            $errorMessage = cart()->getErrorMessage();
-
-            throw new ProjectException(
-                !empty($errorMessage) ? $errorMessage : 'Не удалось добавить товар в корзину',
-                !empty($errorMessage) ? '' : $e->getMessage()
-            );
+        } catch (CartManagerException $e) {
+            throw new ProjectException($e->getMessage());
         }
 
         flash()->info('Количество товаров изменено');
