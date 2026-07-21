@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Support\Exceptions\ProjectException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 class CartController extends Controller
@@ -47,6 +48,10 @@ class CartController extends Controller
     {
         try {
             cart()->quantity($cartItem, (int)$request->get('quantity'));
+        } catch (HttpExceptionInterface $e) {
+            // abort(404) из проверки владельца cartItem не подменяем на 302:
+            // иначе по коду ответа видно существование чужой корзины (IDOR).
+            throw $e;
         } catch (Throwable $e) {
             $errorMessage = cart()->getErrorMessage();
 
