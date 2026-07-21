@@ -30,7 +30,12 @@ class CartController extends Controller
                 $request->get('options', [])
             );
         } catch (Throwable $e) {
-            throw new ProjectException('Не удалось добавить товар в корзину', $e->getMessage());
+            $errorMessage = cart()->getErrorMessage();
+
+            throw new ProjectException(
+                !empty($errorMessage) ? $errorMessage : 'Не удалось добавить товар в корзину',
+                !empty($errorMessage) ? '' : $e->getMessage()
+            );
         }
 
         flash()->info('Товар добавлен в корзину');
@@ -40,7 +45,17 @@ class CartController extends Controller
 
     public function quantity(CartItem $cartItem, CartQuantityRequest $request): RedirectResponse
     {
-        cart()->quantity($cartItem, (int)$request->get('quantity'));
+        try {
+            cart()->quantity($cartItem, (int)$request->get('quantity'));
+        } catch (Throwable $e) {
+            $errorMessage = cart()->getErrorMessage();
+
+            throw new ProjectException(
+                !empty($errorMessage) ? $errorMessage : 'Не удалось добавить товар в корзину',
+                !empty($errorMessage) ? '' : $e->getMessage()
+            );
+        }
+
         flash()->info('Количество товаров изменено');
 
         return redirect()->route('cart');

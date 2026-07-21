@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('title');
             $table->decimal('price')->index();
             $table->unsignedInteger('quantity')->index()->default(0);
+            $table->unsignedInteger('max_order_quantity')->nullable(); // NULL — действует общий лимит из config('cart.max_quantity_per_product').
             $table->text('text')->nullable();
             $table->json('json_properties')->nullable();
             $table->boolean('on_home_page')->default(false);

@@ -9,4 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('model:prune')->daily();
-Schedule::command('eshop:cancel-unpaid-orders')->everyFifteenMinutes();
+
+// Остатки удерживаются неоплаченным заказом до ~20 мин.
+// Ниже опускать нельзя — клиент, ушедший на страницу оплаты, должен успеть заплатить до отмены заказа.
+Schedule::command('eshop:cancel-unpaid-orders --minutes=15')->everyFiveMinutes();

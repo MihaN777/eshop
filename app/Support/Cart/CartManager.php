@@ -17,8 +17,11 @@ use Throwable;
 class CartManager
 {
     public function __construct(
-        protected CartIdentityStorageContract $identityStorage
-    ) {}
+        protected CartIdentityStorageContract $identityStorage,
+        private string                        $errorMessage = ''
+    )
+    {
+    }
 
     /**
      * Единое правило владения для записи и чтения:
@@ -45,10 +48,10 @@ class CartManager
     private function cacheKey(): string
     {
         $owner = auth()->check()
-            ? 'user-'.auth()->id()
-            : 'guest-'.$this->identityStorage->get();
+            ? 'user-' . auth()->id()
+            : 'guest-' . $this->identityStorage->get();
 
-        return str('cart-'.$owner)
+        return str('cart-' . $owner)
             ->slug()
             ->value();
     }
@@ -69,9 +72,39 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (! $cart || $cartItem->cart_id != $cart->getKey()) {
+        if (!$cart || $cartItem->cart_id != $cart->getKey()) {
             abort(404);
         }
+    }
+
+    /**
+     * Потолок количества одного товара в корзине.
+     *
+     * Считаем сумму по ВСЕМ строкам этого товара: разные наборы опций дают разные
+     * cart_items, поэтому ограничение на одну строку обходится добавлением вариантов.
+     *
+     * @param CartItem|null $excluding строка, чьё количество заменяется (для quantity())
+     *
+     * @throws Exception
+     */
+    private function checkQuantityLimit(Product $product, int $quantity, ?CartItem $excluding = null): void
+    {
+        $limit = $product->maxOrderQuantity();
+
+        $alreadyInCart = $this->cartItems()
+            ->where('product_id', $product->getKey())
+            ->when($excluding, fn(Collection $cartItems) => $cartItems->where('id', '!=', $excluding->getKey()))
+            ->sum('quantity');
+
+        if ($alreadyInCart + $quantity > $limit) {
+            $this->errorMessage = "Больше {$limit} шт. одного товара заказать нельзя.";
+            throw new Exception($this->errorMessage);
+        }
+    }
+
+    public function getErrorMessage(): string
+    {
+        return $this->errorMessage;
     }
 
     /**
@@ -79,6 +112,8 @@ class CartManager
      */
     public function add(Product $product, int $quantity = 1, array $optionValues = []): Cart
     {
+        $this->checkQuantityLimit($product, $quantity);
+
         DB::beginTransaction();
 
         try {
@@ -118,9 +153,14 @@ class CartManager
         return $cart;
     }
 
+    /**
+     * @throws Exception
+     */
     public function quantity(CartItem $cartItem, int $quantity = 1): void
     {
         $this->checkOwner($cartItem);
+        // Количество строки заменяется, поэтому её саму из суммы исключаем (CartItem $excluding).
+        $this->checkQuantityLimit($cartItem->product, $quantity, $cartItem);
         $cartItem->update(['quantity' => $quantity]);
         $this->forgetCache();
     }
@@ -161,7 +201,7 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (! $cart) {
+        if (!$cart) {
             return collect();
         }
 
@@ -175,7 +215,7 @@ class CartManager
     {
         $cart = $this->get();
 
-        if (! $cart) {
+        if (!$cart) {
             return collect();
         }
 
@@ -237,7 +277,7 @@ class CartManager
             ->where('storage_id', $guestStorageId)
             ->first();
 
-        if (! $guestCart) {
+        if (!$guestCart) {
             return;
         }
 

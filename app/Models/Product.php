@@ -7,6 +7,7 @@ use App\Support\Casts\PriceCast;
 use App\Support\Traits\Models\HasSlug;
 use App\Support\Traits\Models\WithFilters;
 use App\Support\Traits\Models\WithSorting;
+use Database\Factories\ProductFactory;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,17 +22,18 @@ use Throwable;
 #[ObservedBy([ProductObserver::class])]
 class Product extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProductFactory> */
+    /** @use HasFactory<ProductFactory> */
     use HasFactory;
     use HasSlug;
-    use WithSorting;
     use WithFilters;
+    use WithSorting;
 
     protected $fillable = [
         'slug',
         'title',
         'price',
         'quantity',
+        'max_order_quantity',
         'text',
         'json_properties',
         'on_home_page',
@@ -88,23 +90,37 @@ class Product extends Model
 
     // Функции модели
 
+    public function maxOrderQuantity(): int
+    {
+        return $this->max_order_quantity ?? config('cart.max_quantity_per_product');
+    }
+
     public function deleteWithRelations(): bool
     {
         $enableTransaction = DB::transactionLevel() > 0 ? false : true;
 
-        if ($enableTransaction) DB::beginTransaction();
+        if ($enableTransaction) {
+            DB::beginTransaction();
+        }
 
         try {
             $images = $this->images;
-            foreach ($images as $image) $image->delete();
+            foreach ($images as $image) {
+                $image->delete();
+            }
 
             $this->delete();
         } catch (Throwable) {
-            if ($enableTransaction) DB::rollBack();
+            if ($enableTransaction) {
+                DB::rollBack();
+            }
+
             return false;
         }
 
-        if ($enableTransaction) DB::commit();
+        if ($enableTransaction) {
+            DB::commit();
+        }
 
         return true;
     }

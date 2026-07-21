@@ -84,6 +84,25 @@ class AppServiceProvider extends ServiceProvider
             return $limits;
         });
 
+        // Оформление заказа списывает остатки и удерживает их до автоотмены,
+        // поэтому лимит здесь защищает склад, а не только сервер.
+        RateLimiter::for('order', function (Request $request) {
+            $key = $request->user()?->id ?: $request->ip();
+
+            return [
+                // Всплеск: живой человек не оформляет заказы очередью.
+                Limit::perMinute(5)
+                    ->by('burst|' . $key)
+                    ->response(fn(Request $request, array $headers) => $this->tooManyOrdersResponse($request, $headers)),
+
+                // Длинное окно под срок удержания остатков: ограничивает объём
+                // склада, который один источник может держать заблокированным.
+                Limit::perMinutes(30, 5)
+                    ->by('sustained|' . $key)
+                    ->response(fn(Request $request, array $headers) => $this->tooManyOrdersResponse($request, $headers)),
+            ];
+        });
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)
                 ->by($request->user()?->id ?: $request->ip());
@@ -116,6 +135,21 @@ class AppServiceProvider extends ServiceProvider
             ->lower()
             ->transliterate()
             ->value();
+    }
+
+    /**
+     * Превышен лимит оформления заказов: возвращаем на форму с понятным
+     * сообщением вместо голого 429, корзина при этом не тронута.
+     *
+     * @param array{'Retry-After'?: int} $headers
+     */
+    private function tooManyOrdersResponse(Request $request, array $headers): RedirectResponse
+    {
+        $seconds = $headers['Retry-After'] ?? 60;
+
+        flash()->alert("Слишком много заказов подряд. Повторите через {$seconds} сек.");
+
+        return back()->withInput();
     }
 
     /**
