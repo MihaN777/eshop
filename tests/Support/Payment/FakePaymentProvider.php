@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 class FakePaymentProvider implements PaymentProviderContract
 {
     protected ?PaymentData $paymentData = null;
+
     protected string $errorMessage = '';
 
     // --- Управляемое поведение (для разных сценариев тестов) ---
@@ -37,7 +38,9 @@ class FakePaymentProvider implements PaymentProviderContract
     // --- Данные «уведомления», которые выставит update() ---
 
     public ?int $notifyOrderId = null;
-    public ?Price $notifyAmount = null;
+
+    public int|float|null $notifyAmount = null;
+
     public ?string $notifyDescription = 'Заказ (fake)';
 
     public function __construct(array $config = [])
@@ -79,7 +82,9 @@ class FakePaymentProvider implements PaymentProviderContract
             return_url: null,
             payment_url: null,
             expired_at: null,
-            amount: $this->notifyAmount,
+            amount: is_null($this->notifyAmount)
+                ? null
+                : Price::fromMinor((int)round($this->notifyAmount * 100)),
             meta: collect(),
         ));
     }
