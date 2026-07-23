@@ -30,7 +30,7 @@ final class PaymentData
             'return_url' => $this->return_url,
             'payment_url' => $this->payment_url,
             'expired_at' => $this->expired_at?->toString(),
-            'amount' => $this->amount?->raw(),
+            'amount' => $this->amount?->value(),
             'meta' => $this->meta,
         ]);
     }

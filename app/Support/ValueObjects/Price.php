@@ -2,51 +2,99 @@
 
 namespace App\Support\ValueObjects;
 
-use App\Support\Traits\Makeable;
 use InvalidArgumentException;
 use Stringable;
 
+/**
+ * Единый шлюз работы с деньгами.
+ *
+ * Внутри всегда хранит целые минорные единицы (копейки/центы) и валюту — это исключает
+ * ошибки округления float и двусмысленность единиц. Все входы/выходы идут
+ * через явные фабрики fromMajor()/fromMinor(), арифметика и сравнение — через методы,
+ * чтобы исключить неявное обращение.
+ */
 final class Price implements Stringable
 {
-    use Makeable;
+    public const MODE_STRICT = 'strict';
 
-    private array $currencies = [
-        'RUB' => '₽',
-        'USD' => '$',
-    ];
+    public const MODE_NON_STRICT = 'non_strict';
 
-    private readonly float|int $value;
-    private readonly float|int $precision;
+    private readonly int $minor;
+
     private readonly string $currency;
 
-    public function __construct(null|float|int $value, float|int $precision = 1, string $currency = 'RUB')
+    private function __construct(int $minor, string $currency)
     {
-        if (is_null($value)) $value = 0;
+        if ($minor < 0) {
+            throw new InvalidArgumentException('Цена должна быть больше нуля');
+        }
 
-        if ($value < 0) throw new InvalidArgumentException('Цена должна быть больше нуля');
+        if (!array_key_exists($currency, self::currencies())) {
+            throw new InvalidArgumentException("Валюта {$currency} не поддерживается");
+        }
 
-        if (!isset($this->currencies[$currency])) throw new InvalidArgumentException("Валюта {$currency} не поддерживается");
-
-        $this->value = $value;
-        $this->precision = $precision;
+        $this->minor = $minor;
         $this->currency = $currency;
     }
 
-    public function raw(): float|int
+    /**
+     * Из минорных единиц (копеек) — значение ложится в $minor как есть, без конвертации.
+     *
+     * @param int|null $minor Сумма в копейках
+     */
+    public static function fromMinor(?int $minor, ?string $currency = null): self
     {
-        return $this->value;
+        return new self($minor ?? 0, $currency ?? self::defaultCurrency());
     }
 
+    /**
+     * Из мажорных единиц (рублей) — с конвертацией в копейки.
+     *
+     * Основной вход для цен из БД (decimal-колонки в рублях) и пользовательского
+     * ввода. Значение умножается на scaleMultiplier валюты (для ₽ — на 100) и один раз
+     * округляется до целых копеек: "1000.50" → 100050. Дальше копейки не покидают
+     * int, поэтому накопления погрешности float не происходит.
+     *
+     * @param int|float|string|null $major Сумма в рублях
+     */
+    public static function fromMajor(int|float|string|null $major, ?string $currency = null): self
+    {
+        $currency = $currency ?? self::defaultCurrency();
+
+        $minor = (int)round(((float)($major ?? 0)) * self::scaleMultiplier($currency));
+
+        return new self($minor, $currency);
+    }
+
+    /**
+     * Алиас fromMajor() для обратной совместимости.
+     */
+    public static function make(int|float|string|null $major = 0, ?string $currency = null): self
+    {
+        return self::fromMajor($major, $currency);
+    }
+
+    public static function zero(?string $currency = null): self
+    {
+        return new self(0, $currency ?? self::defaultCurrency());
+    }
+
+    /**
+     * Сумма в минорных единицах (копейках).
+     */
+    public function minor(): int
+    {
+        return $this->minor;
+    }
+
+    /**
+     * Сумма в мажорных единицах (рублях).
+     */
     public function value(): float|int
     {
-        $result = $this->value / $this->precision;
+        $result = $this->minor / self::scaleMultiplier($this->currency);
 
-        return is_float($result) ? round($result, 2) : $result;
-    }
-
-    public function precision(): float|int
-    {
-        return $this->precision;
+        return is_float($result) ? round($result, self::scale($this->currency)) : $result;
     }
 
     public function currency(): string
@@ -56,38 +104,137 @@ final class Price implements Stringable
 
     public function symbol(): string
     {
-        return $this->currencies[$this->currency];
+        return self::currencies()[$this->currency]['symbol'];
     }
 
-	public function currencyEqualTo(Price $price): bool
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function plus(self $price): self
     {
-        return $this->currency() == $price->currency();
+        $this->assertSameCurrency($price);
+
+        return new self($this->minor + $price->minor, $this->currency);
     }
 
-    public function rawEqualTo(Price $price): bool
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function minus(self $price): self
     {
-        return $this->raw() == $price->raw();
+        $this->assertSameCurrency($price);
+
+        return new self($this->minor - $price->minor, $this->currency);
     }
 
-    public function valueEqualTo(Price $price): bool
+    /**
+     * Умножает сумму на целочисленный множитель (цена × количество).
+     */
+    public function multiply(int $factor): self
     {
-        return $this->value() == $price->value();
+        return new self($this->minor * $factor, $this->currency);
     }
 
-	public function priceEqualTo(Price $price): bool
+    /**
+     * @param iterable<Price> $prices
+     */
+    public static function sum(iterable $prices, ?string $currency = null): self
     {
-        return $this->rawEqualTo($price) && $this->currencyEqualTo($price);
+        $sum = self::zero($currency);
+
+        foreach ($prices as $price) {
+            $sum = $sum->plus($price);
+        }
+
+        return $sum;
     }
 
-    public function priceValueEqualTo(Price $price): bool
+    /**
+     * Равенство с учётом config('money.mode'):
+     * strict — по копейкам; non_strict — по целым рублям (копейки не учитываются).
+     */
+    public function equals(self $price): bool
     {
-        return  $this->valueEqualTo($price) && $this->currencyEqualTo($price);
+        if (!$this->currencyEqualTo($price)) {
+            return false;
+        }
+
+        return self::isStrict()
+            ? $this->minor === $price->minor
+            : $this->wholeUnits() === $price->wholeUnits();
+    }
+
+    public function currencyEqualTo(self $price): bool
+    {
+        return $this->currency === $price->currency;
     }
 
     public function __toString(): string
     {
-        $decimals = strlen(explode('.', (string)$this->value())[1] ?? '');
+        $format = config('money.format');
 
-        return number_format($this->value(), $decimals, ',', ' ') . ' ' . $this->symbol();
+        if (self::isStrict()) {
+            $decimals = strlen(explode('.', (string)$this->value())[1] ?? '');
+
+            return number_format($this->value(), $decimals, $format['decimals'], $format['thousands'])
+                . ' ' . $this->symbol();
+        }
+
+        return number_format($this->wholeUnits(), 0, $format['decimals'], $format['thousands'])
+            . ' ' . $this->symbol();
+    }
+
+    /**
+     * Целые мажорные единицы (рубли) с усечением минорной части.
+     */
+    private function wholeUnits(): int
+    {
+        return intdiv($this->minor, self::scaleMultiplier($this->currency));
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function assertSameCurrency(self $price): void
+    {
+        if (!$this->currencyEqualTo($price)) {
+            throw new InvalidArgumentException(
+                "Нельзя оперировать разными валютами: {$this->currency} и {$price->currency}"
+            );
+        }
+    }
+
+    private static function isStrict(): bool
+    {
+        return config('money.mode', self::MODE_STRICT) === self::MODE_STRICT;
+    }
+
+    /**
+     * @return array<string, array{symbol: string, scale: int}>
+     */
+    private static function currencies(): array
+    {
+        return config('money.currencies', []);
+    }
+
+    private static function defaultCurrency(): string
+    {
+        return config('money.default_currency', 'RUB');
+    }
+
+    /**
+     * Число знаков минорной единицы валюты (для ₽/$ — 2: копейки/центы).
+     */
+    private static function scale(string $currency): int
+    {
+        return self::currencies()[$currency]['scale'] ?? 2;
+    }
+
+    /**
+     * Множитель перевода мажорных единиц в минорные: 10^scale (для ₽ — 100).
+     */
+    private static function scaleMultiplier(string $currency): int
+    {
+        return 10 ** self::scale($currency);
     }
 }

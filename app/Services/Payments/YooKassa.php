@@ -20,7 +20,9 @@ use YooKassa\Request\Payments\PaymentResponse;
 final class YooKassa implements PaymentProviderContract
 {
     protected Client $client;
+
     protected ?PaymentData $paymentData;
+
     protected string $errorMessage;
 
     public function __construct(array $config)
@@ -82,9 +84,9 @@ final class YooKassa implements PaymentProviderContract
             return_url: null,
             payment_url: null,
             expired_at: null,
-            amount: new Price(
-                value: $paymentObject->getAmount()->getIntegerValue(),
-                currency: $paymentObject->getAmount()->getCurrency(),
+            amount: Price::fromMinor(
+                $paymentObject->getAmount()->getIntegerValue(),
+                $paymentObject->getAmount()->getCurrency(),
             ),
             meta: collect($paymentObject->getMetadata()->toArray())
         ));
@@ -94,7 +96,9 @@ final class YooKassa implements PaymentProviderContract
     {
         $requestBody = request()->getContent(); // file_get_contents('php://input');
 
-        if (!is_string($requestBody)) $requestBody = '';
+        if (!is_string($requestBody)) {
+            $requestBody = '';
+        }
 
         return $requestBody;
     }

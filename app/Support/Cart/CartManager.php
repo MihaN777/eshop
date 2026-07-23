@@ -145,10 +145,8 @@ class CartManager
 
     public function amount(): Price
     {
-        return Price::make(
-            $this->cartItems()->sum(function ($item) {
-                return $item->amount->raw();
-            })
+        return Price::sum(
+            $this->cartItems()->map(fn($item) => $item->amount)
         );
     }
 

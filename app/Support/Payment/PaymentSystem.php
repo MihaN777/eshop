@@ -218,11 +218,11 @@ class PaymentSystem
                     // Деньги получены — платёж помечаем оплаченным в любом случае
                     // (нужно для сверки и возможного возврата).
                     $payment->status->transitionTo(new PaidPaymentState($payment));
-                    $payment->amount = $providerAmount?->raw();
+                    $payment->amount = $providerAmount;
                     $payment->save();
 
                     if ($order->status->value() === OrderStatuses::Pending->value) {
-                        if ($providerAmount?->priceEqualTo($order->amount)) {
+                        if ($providerAmount?->equals($order->amount)) {
                             $order->status->transitionTo(new PaidOrderState($order));
                         }
                     } else {
