@@ -11,7 +11,7 @@ return new class extends Migration {
         Schema::create('delivery_types', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->unsignedInteger('price')->default(0);
+            $table->decimal('price', 10, 2)->default(0);
             $table->boolean('with_address')->default(false);
             $table->timestamps();
         });

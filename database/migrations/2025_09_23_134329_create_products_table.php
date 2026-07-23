@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('slug')->unique();
             $table->string('title');
-            $table->decimal('price')->index();
+            $table->decimal('price', 10, 2)->index();
             $table->unsignedInteger('quantity')->index()->default(0);
             $table->unsignedInteger('max_order_quantity')->nullable(); // NULL — действует общий лимит из config('cart.max_quantity_per_product').
             $table->text('text')->nullable();
