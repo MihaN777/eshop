@@ -15,10 +15,6 @@ use Stringable;
  */
 final class Price implements Stringable
 {
-    public const MODE_STRICT = 'strict';
-
-    public const MODE_NON_STRICT = 'non_strict';
-
     private readonly int $minor;
 
     private readonly string $currency;
@@ -149,19 +145,13 @@ final class Price implements Stringable
         return $sum;
     }
 
-    /**
-     * Равенство с учётом config('money.mode'):
-     * strict — по копейкам; non_strict — по целым рублям (копейки не учитываются).
-     */
     public function equals(self $price): bool
     {
         if (!$this->currencyEqualTo($price)) {
             return false;
         }
 
-        return self::isStrict()
-            ? $this->minor === $price->minor
-            : $this->wholeUnits() === $price->wholeUnits();
+        return $this->minor === $price->minor;
     }
 
     public function currencyEqualTo(self $price): bool
@@ -171,25 +161,11 @@ final class Price implements Stringable
 
     public function __toString(): string
     {
-        $format = config('money.format');
+        $format = config("money.format.{$this->currency}");
+        $decimals = strlen(explode('.', (string)$this->value())[1] ?? '');
 
-        if (self::isStrict()) {
-            $decimals = strlen(explode('.', (string)$this->value())[1] ?? '');
-
-            return number_format($this->value(), $decimals, $format['decimals'], $format['thousands'])
-                . ' ' . $this->symbol();
-        }
-
-        return number_format($this->wholeUnits(), 0, $format['decimals'], $format['thousands'])
+        return number_format($this->value(), $decimals, $format['decimals'], $format['thousands'])
             . ' ' . $this->symbol();
-    }
-
-    /**
-     * Целые мажорные единицы (рубли) с усечением минорной части.
-     */
-    private function wholeUnits(): int
-    {
-        return intdiv($this->minor, self::scaleMultiplier($this->currency));
     }
 
     /**
@@ -202,11 +178,6 @@ final class Price implements Stringable
                 "Нельзя оперировать разными валютами: {$this->currency} и {$price->currency}"
             );
         }
-    }
-
-    private static function isStrict(): bool
-    {
-        return config('money.mode', self::MODE_STRICT) === self::MODE_STRICT;
     }
 
     /**
