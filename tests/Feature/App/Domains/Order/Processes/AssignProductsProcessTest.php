@@ -24,14 +24,14 @@ class AssignProductsProcessTest extends TestCase
         $this->seedCartItem($product, 2);
         $order = $this->makeOrder();
 
-        (new AssignProductsProcess())->handle($order, $this->pass());
+        (new AssignProductsProcess)->handle($order, $this->pass());
 
         $this->assertDatabaseHas('order_items', [
             'order_id' => $order->id,
             'product_id' => $product->id,
             'quantity' => 2,
         ]);
-        $this->assertEquals(3000, $order->fresh()->amount->raw());
+        $this->assertEquals(3000, $order->fresh()->amount->value());
     }
 
     /**
@@ -49,7 +49,7 @@ class AssignProductsProcessTest extends TestCase
 
         $order = $this->makeOrder();
 
-        (new AssignProductsProcess())->handle($order, $this->pass());
+        (new AssignProductsProcess)->handle($order, $this->pass());
 
         $orderItem = $order->orderItems()->first();
 
