@@ -8,7 +8,6 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Support\Payment\Exceptions\PaymentProcessException;
 use App\Support\Payment\PaymentSystem;
-use App\Support\ValueObjects\Price;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Tests\Support\Payment\FakePaymentProvider;
@@ -82,7 +81,7 @@ class PaymentSystemTest extends TestCase
         $fake->validates = true;
         $fake->isPaid = true;
         $fake->notifyOrderId = $order->id;
-        $fake->notifyAmount = Price::make(100);
+        $fake->notifyAmount = 100;
         PaymentSystem::setProvider($fake);
 
         PaymentSystem::update();
@@ -108,7 +107,7 @@ class PaymentSystemTest extends TestCase
         $fake->validates = true;
         $fake->isPaid = true;
         $fake->notifyOrderId = $order->id;
-        $fake->notifyAmount = Price::make(100);
+        $fake->notifyAmount = 100;
         PaymentSystem::setProvider($fake);
 
         PaymentSystem::update();
@@ -148,7 +147,7 @@ class PaymentSystemTest extends TestCase
         $fake->validates = true;
         $fake->isPaid = true;
         $fake->notifyOrderId = $order->id;
-        $fake->notifyAmount = Price::make(50);
+        $fake->notifyAmount = 50;
         PaymentSystem::setProvider($fake);
 
         PaymentSystem::update();
@@ -176,7 +175,7 @@ class PaymentSystemTest extends TestCase
         $fake->validates = true;
         $fake->isPaid = true;
         $fake->notifyOrderId = $order->id;
-        $fake->notifyAmount = Price::make(100);
+        $fake->notifyAmount = 100;
         PaymentSystem::setProvider($fake);
 
         PaymentSystem::update();
