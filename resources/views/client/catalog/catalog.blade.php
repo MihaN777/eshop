@@ -45,7 +45,7 @@
                 <form action="{{ route('catalog', $category) }}"
                       class="overflow-auto max-h-[320px] lg:max-h-[100%] space-y-10 p-6 2xl:p-8 rounded-2xl bg-card">
 
-                    <input type="hidden" name="sort" value="{{ request('sort') }}">
+                    <input type="hidden" name="sort" value="{{ sorter()->current() }}">
 
                     @foreach(filters() as $filter)
                         {!! $filter !!}
@@ -98,35 +98,35 @@
                         </div>
                     </div>
 
-                    <div x-data="{sort: '{{ filter_url($category, ['sort' => request('sort')]) }}'}"
+                    <div x-data="{sort: '{{ filter_url($category, ['sort' => sorter()->current()]) }}'}"
                          class="flex flex-col sm:flex-row sm:items-center gap-3">
                         <span class="text-body text-xxs sm:text-xs !leading-5">Сортировать</span>
 
                         <select
-                                name="sort"
-                                x-model="sort"
-                                x-on:change="window.location = sort"
-                                class="form-select w-full h-12 px-4 rounded-lg border border-body/10 focus:border-pink focus:shadow-[0_0_0_3px_#EC4176] bg-white/5 text-white text-xxs sm:text-xs shadow-transparent outline-0 transition">
+                            name="sort"
+                            x-model="sort"
+                            x-on:change="window.location = sort"
+                            class="form-select w-full h-12 px-4 rounded-lg border border-body/10 focus:border-pink focus:shadow-[0_0_0_3px_#EC4176] bg-white/5 text-white text-xxs sm:text-xs shadow-transparent outline-0 transition">
 
-                            <option @selected(!request('sort'))
+                            <option @selected(!sorter()->column())
                                     value="{{ filter_url($category, ['sort' => '']) }}"
                                     class="text-dark">
                                 по умолчанию
                             </option>
 
-                            <option @selected(request('sort') === 'price')
+                            <option @selected(sorter()->isActive('price'))
                                     value="{{ filter_url($category, ['sort' => 'price']) }}"
                                     class="text-dark">
                                 от дешевых к дорогим
                             </option>
 
-                            <option @selected(request('sort') === '-price')
+                            <option @selected(sorter()->isActive('price', 'DESC'))
                                     value="{{ filter_url($category, ['sort' => '-price']) }}"
                                     class="text-dark">
                                 от дорогих к дешевым
                             </option>
 
-                            <option @selected(request('sort') === 'title')
+                            <option @selected(sorter()->isActive('title'))
                                     value="{{ filter_url($category, ['sort' => 'title']) }}"
                                     class="text-dark">
                                 по наименованию
@@ -136,7 +136,8 @@
                 </div>
 
                 <!-- Products list -->
-                <div class="products grid @if(is_catalog_view('list')) grid-cols-1 gap-y-8 @else grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 2xl:gap-x-8 gap-y-8 lg:gap-y-10 2xl:gap-y-12 @endif">
+                <div
+                    class="products grid @if(is_catalog_view('list')) grid-cols-1 gap-y-8 @else grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 2xl:gap-x-8 gap-y-8 lg:gap-y-10 2xl:gap-y-12 @endif">
                     @each('client.catalog.shared.product' . (is_catalog_view('list') ? '-list' : ''), $products, 'product')
                 </div>
 

@@ -44,10 +44,19 @@ if (!function_exists('is_catalog_view')) {
 if (!function_exists('filter_url')) {
     function filter_url(?Category $category, array $params = []): string
     {
-        return route('catalog', [
-            ...request()->only(['filters', 'sort']),
+        $query = [
+            ...request()->only(['filters']),
+            'sort' => sorter()->current(),
             ...$params,
             'category' => $category
-        ]);
+        ];
+
+        // Пустая сортировка не должна висеть в ссылке; сюда же попадает
+        // значение, отброшенное whitelist'ом сортировщика.
+        if (($query['sort'] ?? '') === '') {
+            unset($query['sort']);
+        }
+
+        return route('catalog', $query);
     }
 }
